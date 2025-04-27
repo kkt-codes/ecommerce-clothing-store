@@ -3,7 +3,7 @@ function App() {
 
   return (
     <>
-      <p>Ecommerce</p>
+      <p>Ecommerce under production</p>
     </>
   )
 }

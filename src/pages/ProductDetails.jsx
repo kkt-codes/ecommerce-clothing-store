@@ -1,11 +1,66 @@
 // Info + Contact Seller
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import ContactSellerButton from "../components/ContactSellerButton";
 
+/* Product Details Page */
 export default function ProductDetails() {
+  const { id } = useParams(); // Get product ID from URL
+  const [product, setProduct] = useState(null);
+
+  // Load product on mount
+  useEffect(() => {
+    // First, check localStorage (in case seller added products)
+    const localProducts = JSON.parse(localStorage.getItem("products")) || [];
+
+    if (localProducts.length > 0) {
+      const found = localProducts.find((p) => p.id === id);
+      setProduct(found);
+    } else {
+      // Fallback: Fetch from static JSON
+      fetch("/data/products.json")
+        .then((res) => res.json())
+        .then((data) => {
+          const found = data.find((p) => p.id === id);
+          setProduct(found);
+        })
+        .catch((err) => console.error("Error loading product:", err));
+    }
+  }, [id]);
+
+  if (!product) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <p className="text-gray-500">Loading product details...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">Product Details Page</h1>
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+
+        {/* Product Image */}
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-[400px] object-cover rounded-lg shadow-lg"
+        />
+
+        {/* Product Details */}
+        <div className="flex flex-col gap-6">
+          <h1 className="text-3xl font-bold">{product.name}</h1>
+          <p className="text-2xl text-blue-600 font-bold">${product.price}</p>
+          <p className="text-gray-600">{product.description}</p>
+          <p className="text-sm text-gray-400">Category: {product.category}</p>
+
+          {/* Contact Seller Button */}
+          <ContactSellerButton sellerId={product.sellerId} />
+        </div>
+
+      </div>
     </div>
   );
 }
+

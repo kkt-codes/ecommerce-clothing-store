@@ -1,0 +1,337 @@
+[
+    {
+      "id": "dress-001",
+      "name": "Elegant Red Dress",
+      "description": "Stylish red dress perfect for evening events.",
+      "price": 129.99,
+      "category": "Dress",
+      "image": "/assets/products/dress1.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "dress-002",
+      "name": "Casual Summer Dress",
+      "description": "Lightweight summer dress ideal for warm days.",
+      "price": 89.50,
+      "category": "Dress",
+      "image": "/assets/products/dress2.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "dress-003",
+      "name": "Classic Black Dress",
+      "description": "Timeless black dress for formal occasions.",
+      "price": 149.00,
+      "category": "Dress",
+      "image": "/assets/products/dress3.jpg",
+      "sellerId": "seller-003"
+    },
+    {
+      "id": "dress-004",
+      "name": "Floral Maxi Dress",
+      "description": "Colorful maxi dress with floral patterns.",
+      "price": 105.75,
+      "category": "Dress",
+      "image": "/assets/products/dress4.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "dress-005",
+      "name": "Chiffon Party Dress",
+      "description": "Elegant chiffon dress perfect for parties.",
+      "price": 134.99,
+      "category": "Dress",
+      "image": "/assets/products/dress5.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "dress-006",
+      "name": "Vibrant Sundress",
+      "description": "Bright and colorful sundress for vacations.",
+      "price": 78.30,
+      "category": "Dress",
+      "image": "/assets/products/dress6.jpg",
+      "sellerId": "seller-003"
+    },
+  
+    
+    {
+      "id": "jacket-001",
+      "name": "Denim Blue Jacket",
+      "description": "Classic denim jacket with rugged look.",
+      "price": 89.99,
+      "category": "Jacket",
+      "image": "/assets/products/jacket1.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "jacket-002",
+      "name": "Leather Biker Jacket",
+      "description": "Tough leather jacket for bikers and style lovers.",
+      "price": 220.00,
+      "category": "Jacket",
+      "image": "/assets/products/jacket2.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "jacket-003",
+      "name": "Casual Bomber Jacket",
+      "description": "Trendy bomber jacket for casual outings.",
+      "price": 120.00,
+      "category": "Jacket",
+      "image": "/assets/products/jacket3.jpg",
+      "sellerId": "seller-003"
+    },
+    {
+      "id": "jacket-004",
+      "name": "Winter Parka",
+      "description": "Heavy-duty parka jacket for cold winters.",
+      "price": 249.99,
+      "category": "Jacket",
+      "image": "/assets/products/jacket4.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "jacket-005",
+      "name": "Lightweight Windbreaker",
+      "description": "Comfortable windbreaker jacket for daily wear.",
+      "price": 65.00,
+      "category": "Jacket",
+      "image": "/assets/products/jacket5.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "jacket-006",
+      "name": "Puffer Jacket",
+      "description": "Warm puffer jacket ideal for snowy days.",
+      "price": 190.50,
+      "category": "Jacket",
+      "image": "/assets/products/jacket6.jpg",
+      "sellerId": "seller-003"
+    },
+  
+    
+    {
+      "id": "kids-001",
+      "name": "Kids Rainbow T-shirt",
+      "description": "Bright t-shirt perfect for kids' fun days.",
+      "price": 25.00,
+      "category": "Kids",
+      "image": "/assets/products/kids1.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "kids-002",
+      "name": "Kids Overalls",
+      "description": "Cute denim overalls for kids.",
+      "price": 35.99,
+      "category": "Kids",
+      "image": "/assets/products/kids2.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "kids-003",
+      "name": "Kids Winter Jacket",
+      "description": "Warm jacket for cold days at the playground.",
+      "price": 59.99,
+      "category": "Kids",
+      "image": "/assets/products/kids3.jpg",
+      "sellerId": "seller-003"
+    },
+    {
+      "id": "kids-004",
+      "name": "Kids Floral Dress",
+      "description": "Lovely floral dress for little girls.",
+      "price": 48.00,
+      "category": "Kids",
+      "image": "/assets/products/kids4.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "kids-005",
+      "name": "Kids Hoodie",
+      "description": "Comfortable hoodie for boys and girls.",
+      "price": 40.00,
+      "category": "Kids",
+      "image": "/assets/products/kids5.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "kids-006",
+      "name": "Kids Pajama Set",
+      "description": "Soft pajama set for cozy bedtime.",
+      "price": 30.00,
+      "category": "Kids",
+      "image": "/assets/products/kids6.jpg",
+      "sellerId": "seller-003"
+    },
+  
+    
+    {
+      "id": "shirt-001",
+      "name": "White Cotton Shirt",
+      "description": "Classic white shirt for any occasion.",
+      "price": 59.99,
+      "category": "Shirt",
+      "image": "/assets/products/shirt1.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "shirt-002",
+      "name": "Plaid Flannel Shirt",
+      "description": "Warm flannel shirt with plaid design.",
+      "price": 68.50,
+      "category": "Shirt",
+      "image": "/assets/products/shirt2.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "shirt-003",
+      "name": "Linen Summer Shirt",
+      "description": "Breathable linen shirt for hot days.",
+      "price": 70.00,
+      "category": "Shirt",
+      "image": "/assets/products/shirt3.jpg",
+      "sellerId": "seller-003"
+    },
+    {
+      "id": "shirt-004",
+      "name": "Slim Fit Shirt",
+      "description": "Modern slim fit shirt for a sharp look.",
+      "price": 80.00,
+      "category": "Shirt",
+      "image": "/assets/products/shirt4.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "shirt-005",
+      "name": "Denim Shirt",
+      "description": "Casual denim shirt with button details.",
+      "price": 75.00,
+      "category": "Shirt",
+      "image": "/assets/products/shirt5.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "shirt-006",
+      "name": "Striped Office Shirt",
+      "description": "Professional shirt with striped pattern.",
+      "price": 90.00,
+      "category": "Shirt",
+      "image": "/assets/products/shirt6.jpg",
+      "sellerId": "seller-003"
+    },
+  
+    
+    {
+      "id": "tshirt-001",
+      "name": "Graphic Print T-shirt",
+      "description": "Trendy t-shirt with modern print.",
+      "price": 35.00,
+      "category": "T-shirt",
+      "image": "/assets/products/tshirt1.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "tshirt-002",
+      "name": "Plain White T-shirt",
+      "description": "Simple, everyday basic white tee.",
+      "price": 20.00,
+      "category": "T-shirt",
+      "image": "/assets/products/tshirt2.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "tshirt-003",
+      "name": "Vintage Rock T-shirt",
+      "description": "Retro rock band inspired t-shirt.",
+      "price": 42.00,
+      "category": "T-shirt",
+      "image": "/assets/products/tshirt3.jpg",
+      "sellerId": "seller-003"
+    },
+    {
+      "id": "tshirt-004",
+      "name": "Sports Jersey T-shirt",
+      "description": "Athletic inspired jersey t-shirt.",
+      "price": 38.00,
+      "category": "T-shirt",
+      "image": "/assets/products/tshirt4.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "tshirt-005",
+      "name": "Pocket T-shirt",
+      "description": "Comfortable t-shirt with chest pocket.",
+      "price": 28.50,
+      "category": "T-shirt",
+      "image": "/assets/products/tshirt5.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "tshirt-006",
+      "name": "Tie-Dye T-shirt",
+      "description": "Colorful tie-dye designed t-shirt.",
+      "price": 40.00,
+      "category": "T-shirt",
+      "image": "/assets/products/tshirt6.jpg",
+      "sellerId": "seller-003"
+    },
+  
+    
+    {
+      "id": "trouser-001",
+      "name": "Classic Black Trousers",
+      "description": "Formal trousers for office and events.",
+      "price": 99.00,
+      "category": "Trouser",
+      "image": "/assets/products/trouser1.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "trouser-002",
+      "name": "Casual Jogger Pants",
+      "description": "Comfortable jogger pants for casual wear.",
+      "price": 55.00,
+      "category": "Trouser",
+      "image": "/assets/products/trouser2.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "trouser-003",
+      "name": "Slim Fit Chinos",
+      "description": "Modern chinos for smart casual outfits.",
+      "price": 80.00,
+      "category": "Trouser",
+      "image": "/assets/products/trouser3.jpg",
+      "sellerId": "seller-003"
+    },
+    {
+      "id": "trouser-004",
+      "name": "High Waist Trousers",
+      "description": "Stylish high waist trousers for women.",
+      "price": 92.50,
+      "category": "Trouser",
+      "image": "/assets/products/trouser4.jpg",
+      "sellerId": "seller-001"
+    },
+    {
+      "id": "trouser-005",
+      "name": "Cargo Pants",
+      "description": "Durable cargo pants with multiple pockets.",
+      "price": 65.00,
+      "category": "Trouser",
+      "image": "/assets/products/trouser5.jpg",
+      "sellerId": "seller-002"
+    },
+    {
+      "id": "trouser-006",
+      "name": "Wide Leg Trousers",
+      "description": "Comfortable wide-leg pants for a relaxed look.",
+      "price": 88.00,
+      "category": "Trouser",
+      "image": "/assets/products/trouser6.jpg",
+      "sellerId": "seller-003"
+    }
+  ]
+  

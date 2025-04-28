@@ -1,0 +1,27 @@
+[
+    {
+      "id": "seller-001",
+      "firstName": "Alice",
+      "lastName": "Brown",
+      "email": "alice@sellershop.com",
+      "password": "password123",
+      "role": "Seller"
+    },
+    {
+      "id": "seller-002",
+      "firstName": "David",
+      "lastName": "Smith",
+      "email": "david@sellershop.com",
+      "password": "password123",
+      "role": "Seller"
+    },
+    {
+      "id": "seller-003",
+      "firstName": "Emma",
+      "lastName": "Wilson",
+      "email": "emma@sellershop.com",
+      "password": "password123",
+      "role": "Seller"
+    }
+  ]
+  

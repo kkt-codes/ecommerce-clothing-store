@@ -1,0 +1,27 @@
+[
+    {
+      "id": "buyer-001",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@buyershop.com",
+      "password": "password123",
+      "role": "Buyer"
+    },
+    {
+      "id": "buyer-002",
+      "firstName": "Sophia",
+      "lastName": "Taylor",
+      "email": "sophia@buyershop.com",
+      "password": "password123",
+      "role": "Buyer"
+    },
+    {
+      "id": "buyer-003",
+      "firstName": "Liam",
+      "lastName": "Johnson",
+      "email": "liam@buyershop.com",
+      "password": "password123",
+      "role": "Buyer"
+    }
+  ]
+  

@@ -1,12 +1,12 @@
 // View cart items
 
 import { useBuyerAuth } from "../hooks/useBuyerAuth";
-import { useSignupLoginModal } from "../hooks/useSignupLoginModal";
+import { useSignupLoginModal } from "../hooks/useSignupSigninModal";
 import { useEffect, useState } from "react";
 
 export default function Cart() {
   const { isAuthenticated, buyerData } = useBuyerAuth();
-  const { openModal, switchToTab } = useSignupLoginModal();
+  const { openModal, switchToTab } = useSignupSigninModal();
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function Cart() {
         <div className="flex gap-4">
           <button
             onClick={() => {
-              switchToTab("login");
+              switchToTab("signin");
               openModal();
             }}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"

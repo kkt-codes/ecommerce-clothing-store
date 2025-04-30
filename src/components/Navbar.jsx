@@ -10,7 +10,7 @@ import {
 
 import { useAuth } from "../hooks/useAuth";
 import { useBuyerAuth } from "../hooks/useBuyerAuth";
-import { useSignupLoginModal } from "../hooks/useSignupLoginModal";
+import { useSignupSigninModal } from "../hooks/useSignupSigninModal";
 
 const isActive = (path, current) => path === current;
 
@@ -23,7 +23,7 @@ export default function Navbar() {
 
   const { isAuthenticated: sellerLoggedIn, sellerData, logout: sellerLogout } = useAuth();
   const { isAuthenticated: buyerLoggedIn, buyerData, logout: buyerLogout } = useBuyerAuth();
-  const { openModal, switchToTab } = useSignupLoginModal();
+  const { openModal, switchToTab } = useSignupSigninModal();
 
   const userLoggedIn = sellerLoggedIn || buyerLoggedIn;
   const userData = sellerLoggedIn ? sellerData : buyerData;

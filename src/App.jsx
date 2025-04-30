@@ -1,4 +1,4 @@
-import { BrowserRouter as Router } from "react-router-dom";
+/* import { BrowserRouter as Router } from "react-router-dom"; */
 import AppRoutes from "./routes/AppRoutes";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -6,7 +6,7 @@ import SignupSigninModal from "./components/SignupSigninModal";
 
 function App() {
   return (
-    <Router>
+    <>
       {/* Navbar always visible */}
       <Navbar />
 
@@ -18,7 +18,7 @@ function App() {
 
       {/* Footer always visible */}
       <Footer />
-    </Router>
+    </>
   );
 }
 

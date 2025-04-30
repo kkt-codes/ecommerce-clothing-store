@@ -1,7 +1,7 @@
 // View cart items
 
 import { useBuyerAuth } from "../hooks/useBuyerAuth";
-import { useSignupLoginModal } from "../hooks/useSignupSigninModal";
+import { useSignupSigninModal } from "../hooks/useSignupSigninModal";
 import { useEffect, useState } from "react";
 
 export default function Cart() {

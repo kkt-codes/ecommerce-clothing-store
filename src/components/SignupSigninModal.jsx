@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { EyeIcon, EyeSlashIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useSignupSigninModal } from "../hooks/useSignupSigninModal";
+import { useSignupSigninModal } from "../hooks/useSignupSigninModal.jsx";
 import { useAuth } from "../hooks/useAuth";
 import { useBuyerAuth } from "../hooks/useBuyerAuth";
 import buyers from "../data/buyers.json";

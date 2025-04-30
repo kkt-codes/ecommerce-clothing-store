@@ -1,273 +1,159 @@
-// Modal switching between SignUp and Login
-
 import { useState } from "react";
+import { Dialog } from "@headlessui/react";
+import { EyeIcon, EyeSlashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useSignupLoginModal } from "../hooks/useSignupLoginModal";
-import { useAuth } from "../hooks/useAuth";
-import { useBuyerAuth } from "../hooks/useBuyerAuth";
-import { EyeIcon, EyeOffIcon } from "@heroicons/react/24/outline";
 
-import sellers from "../data/sellers.json";
-import buyers from "../data/buyers.json";
-
-/* Signup/Login Modal */
 export default function SignupLoginModal() {
-  const { isOpen, closeModal } = useSignupLoginModal();
-  const [view, setView] = useState("signup"); // "signup" or "login"
-  const [showPassword, setShowPassword] = useState(false);
+  const { isOpen, closeModal, activeTab, switchToTab } = useSignupLoginModal();
 
-  // Form states
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "Buyer"
+    role: "Buyer",
   });
 
-  const { login: sellerLogin } = useAuth();        // Seller login function
-  const { login: buyerLogin } = useBuyerAuth();    // Buyer login function
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Handle form input changes
   const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle password visibility toggle
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  // ===== Handle Sign Up Submit =====
-  const handleSignup = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const { firstName, lastName, email, password, confirmPassword, role } = formData;
-
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !role) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
-
-    // Check if user already exists
-    const existingSeller = sellers.find((u) => u.email === email);
-    const existingBuyer = buyers.find((u) => u.email === email);
-
-    if (existingSeller || existingBuyer) {
-      alert("Account with this email already exists.");
-      return;
-    }
-
-    // Mock create user
-    const newUser = {
-      id: `${role.toLowerCase()}-${Date.now()}`,
-      firstName,
-      lastName,
-      email,
-      password,
-      role
-    };
-
-    if (role === "Seller") {
-      // Save seller
-      localStorage.setItem("sellerToken", `token-${newUser.id}`);
-      localStorage.setItem("sellerData", JSON.stringify(newUser));
-      sellerLogin(`token-${newUser.id}`, newUser);
-    } else {
-      // Save buyer
-      localStorage.setItem("buyerToken", `token-${newUser.id}`);
-      localStorage.setItem("buyerData", JSON.stringify(newUser));
-      buyerLogin(`token-${newUser.id}`, newUser);
-    }
-
+    console.log("Submit", formData);
+    // add your auth logic here
     closeModal();
-    alert("Account created successfully!");
   };
-
-  // ===== Handle Login Submit =====
-  const handleLogin = (e) => {
-    e.preventDefault();
-
-    const { email, password } = formData;
-
-    if (!email || !password) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    // Check sellers
-    const sellerUser = sellers.find((u) => u.email === email && u.password === password);
-    if (sellerUser) {
-      localStorage.setItem("sellerToken", `token-${sellerUser.id}`);
-      localStorage.setItem("sellerData", JSON.stringify(sellerUser));
-      sellerLogin(`token-${sellerUser.id}`, sellerUser);
-      closeModal();
-      return;
-    }
-
-    // Check buyers
-    const buyerUser = buyers.find((u) => u.email === email && u.password === password);
-    if (buyerUser) {
-      localStorage.setItem("buyerToken", `token-${buyerUser.id}`);
-      localStorage.setItem("buyerData", JSON.stringify(buyerUser));
-      buyerLogin(`token-${buyerUser.id}`, buyerUser);
-      closeModal();
-      return;
-    }
-
-    alert("Invalid email or password.");
-  };
-
-  if (!isOpen) return null; // Modal hidden when closed
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+    <Dialog open={isOpen} onClose={closeModal} className="fixed z-50 inset-0 flex items-center justify-center bg-black/30">
+      <div className="bg-white w-full max-w-md rounded-lg shadow-lg relative p-6 mx-4 md:mx-0">
         {/* Close Button */}
-        <button onClick={closeModal} className="absolute top-2 right-2 text-gray-600 hover:text-black">&times;</button>
+        <button onClick={closeModal} className="absolute top-4 right-4 text-gray-500 hover:text-black">
+          <XMarkIcon className="h-6 w-6" />
+        </button>
 
-        {/* Toggle Tabs */}
-        <div className="flex mb-6">
+        {/* Tab Buttons */}
+        <div className="flex justify-center mb-6 border-b pb-2">
           <button
-            className={`flex-1 py-2 ${view === "signup" ? "border-b-2 border-blue-600 font-semibold" : ""}`}
-            onClick={() => setView("signup")}
+            onClick={() => switchToTab("signup")}
+            className={`px-4 py-2 text-sm font-semibold ${activeTab === "signup" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500"}`}
           >
             Sign Up
           </button>
           <button
-            className={`flex-1 py-2 ${view === "login" ? "border-b-2 border-blue-600 font-semibold" : ""}`}
-            onClick={() => setView("login")}
+            onClick={() => switchToTab("signin")}
+            className={`px-4 py-2 text-sm font-semibold ml-4 ${activeTab === "signin" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500"}`}
           >
-            Log In
+            Sign In
           </button>
         </div>
 
-        {/* ===== Sign Up Form ===== */}
-        {view === "signup" ? (
-          <form className="flex flex-col gap-4" onSubmit={handleSignup}>
-            {/* Floating Labels */}
-            {["firstName", "lastName", "email"].map((field) => (
-              <div key={field} className="relative">
-                <input
-                  type="text"
-                  id={field}
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  placeholder=" "
-                  required
-                  className="peer w-full border-b-2 focus:outline-none py-2"
-                />
-                <label
-                  htmlFor={field}
-                  className="absolute left-0 top-2 text-gray-500 text-sm peer-placeholder-shown:top-4 peer-placeholder-shown:text-base transition-all"
-                >
-                  {field === "firstName" ? "First Name" : field === "lastName" ? "Last Name" : "Email"}
-                </label>
-              </div>
-            ))}
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {activeTab === "signup" && (
+            <>
+              <FloatingInput label="First Name" name="firstName" value={formData.firstName} onChange={handleChange} />
+              <FloatingInput label="Last Name" name="lastName" value={formData.lastName} onChange={handleChange} />
+            </>
+          )}
+          <FloatingInput label="Email" name="email" type="email" value={formData.email} onChange={handleChange} />
+          
+          <FloatingPasswordInput
+            label="Password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            show={showPassword}
+            setShow={setShowPassword}
+          />
 
-            {/* Password Field */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder=" "
-                required
-                className="peer w-full border-b-2 focus:outline-none py-2"
-              />
-              <label htmlFor="password" className="absolute left-0 top-2 text-gray-500 text-sm peer-placeholder-shown:top-4 peer-placeholder-shown:text-base transition-all">Password</label>
-              <button type="button" className="absolute right-2 top-3" onClick={togglePasswordVisibility}>
-                {showPassword ? <EyeOffIcon className="h-5 w-5 text-gray-400" /> : <EyeIcon className="h-5 w-5 text-gray-400" />}
-              </button>
-            </div>
-
-            {/* Confirm Password Field */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="confirmPassword"
+          {activeTab === "signup" && (
+            <>
+              <FloatingPasswordInput
+                label="Confirm Password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder=" "
-                required
-                className="peer w-full border-b-2 focus:outline-none py-2"
+                show={showPassword}
+                setShow={setShowPassword}
               />
-              <label htmlFor="confirmPassword" className="absolute left-0 top-2 text-gray-500 text-sm peer-placeholder-shown:top-4 peer-placeholder-shown:text-base transition-all">Confirm Password</label>
-            </div>
+              <div className="mt-2">
+                <label className="text-sm font-medium text-gray-600">Role</label>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="w-full mt-1 border px-3 py-2 rounded text-sm focus:outline-blue-500"
+                >
+                  <option>Buyer</option>
+                  <option>Seller</option>
+                </select>
+              </div>
+            </>
+          )}
 
-            {/* Role Select */}
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full border-b-2 py-2 text-gray-700 focus:outline-none"
-            >
-              <option value="Buyer">Buyer</option>
-              <option value="Seller">Seller</option>
-            </select>
-
-            {/* Signup Submit */}
-            <button type="submit" className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-              Create Account
-            </button>
-          </form>
-        ) : (
-          /* ===== Login Form ===== */
-          <form className="flex flex-col gap-4" onSubmit={handleLogin}>
-            <div className="relative">
-              <input
-                type="email"
-                id="loginEmail"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder=" "
-                required
-                className="peer w-full border-b-2 focus:outline-none py-2"
-              />
-              <label htmlFor="loginEmail" className="absolute left-0 top-2 text-gray-500 text-sm peer-placeholder-shown:top-4 peer-placeholder-shown:text-base transition-all">Email</label>
-            </div>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="loginPassword"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder=" "
-                required
-                className="peer w-full border-b-2 focus:outline-none py-2"
-              />
-              <label htmlFor="loginPassword" className="absolute left-0 top-2 text-gray-500 text-sm peer-placeholder-shown:top-4 peer-placeholder-shown:text-base transition-all">Password</label>
-              <button type="button" className="absolute right-2 top-3" onClick={togglePasswordVisibility}>
-                {showPassword ? <EyeOffIcon className="h-5 w-5 text-gray-400" /> : <EyeIcon className="h-5 w-5 text-gray-400" />}
-              </button>
-            </div>
-
-            {/* Login Submit */}
-            <button type="submit" className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-              Log In
-            </button>
-          </form>
-        )}
-
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition"
+          >
+            {activeTab === "signup" ? "Create Account" : "Sign In"}
+          </button>
+        </form>
       </div>
+    </Dialog>
+  );
+}
+
+function FloatingInput({ label, name, type = "text", value, onChange }) {
+  return (
+    <div className="relative">
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder=" "
+        className="peer w-full border px-3 py-2 rounded text-sm placeholder-transparent focus:outline-none focus:border-blue-600"
+      />
+      <label
+        htmlFor={name}
+        className="absolute left-3 top-2 text-sm text-gray-500 transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1 peer-focus:text-sm peer-focus:text-blue-600"
+      >
+        {label}
+      </label>
     </div>
   );
 }
 
-
-
+function FloatingPasswordInput({ label, name, value, onChange, show, setShow }) {
+  return (
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder=" "
+        className="peer w-full border px-3 py-2 rounded text-sm placeholder-transparent focus:outline-none focus:border-blue-600"
+      />
+      <label
+        htmlFor={name}
+        className="absolute left-3 top-2 text-sm text-gray-500 transition-all peer-placeholder-shown:top-2.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1 peer-focus:text-sm peer-focus:text-blue-600"
+      >
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-3 top-2.5 text-gray-500"
+      >
+        {show ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+      </button>
+    </div>
+  );
+}

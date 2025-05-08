@@ -5,7 +5,7 @@
       "description": "Stylish red dress perfect for evening events.",
       "price": 129.99,
       "category": "Dress",
-      "image": "/assets/products/dress1.jpg",
+      "image": "/assets/clothes/dress/dress-1.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -14,7 +14,7 @@
       "description": "Lightweight summer dress ideal for warm days.",
       "price": 89.50,
       "category": "Dress",
-      "image": "/assets/products/dress2.jpg",
+      "image": "/assets/clothes/dress/dress-2.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -23,7 +23,7 @@
       "description": "Timeless black dress for formal occasions.",
       "price": 149.00,
       "category": "Dress",
-      "image": "/assets/products/dress3.jpg",
+      "image": "/assets/clothes/dress/dress-3.jpg",
       "sellerId": "seller-003"
     },
     {
@@ -32,7 +32,7 @@
       "description": "Colorful maxi dress with floral patterns.",
       "price": 105.75,
       "category": "Dress",
-      "image": "/assets/products/dress4.jpg",
+      "image": "/assets/clothes/dress/dress-4.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -41,7 +41,7 @@
       "description": "Elegant chiffon dress perfect for parties.",
       "price": 134.99,
       "category": "Dress",
-      "image": "/assets/products/dress5.jpg",
+      "image": "/assets/clothes/dress/dress-5.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -50,7 +50,7 @@
       "description": "Bright and colorful sundress for vacations.",
       "price": 78.30,
       "category": "Dress",
-      "image": "/assets/products/dress6.jpg",
+      "image": "/assets/clothes/dress/dress-6.jpg",
       "sellerId": "seller-003"
     },
   
@@ -61,7 +61,7 @@
       "description": "Classic denim jacket with rugged look.",
       "price": 89.99,
       "category": "Jacket",
-      "image": "/assets/products/jacket1.jpg",
+      "image": "/assets/clothes/jacket/jacket-1.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -70,7 +70,7 @@
       "description": "Tough leather jacket for bikers and style lovers.",
       "price": 220.00,
       "category": "Jacket",
-      "image": "/assets/products/jacket2.jpg",
+      "image": "/assets/clothes/jacket/jacket-2.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -79,7 +79,7 @@
       "description": "Trendy bomber jacket for casual outings.",
       "price": 120.00,
       "category": "Jacket",
-      "image": "/assets/products/jacket3.jpg",
+      "image": "/assets/clothes/jacket/jacket-3.jpg",
       "sellerId": "seller-003"
     },
     {
@@ -88,7 +88,7 @@
       "description": "Heavy-duty parka jacket for cold winters.",
       "price": 249.99,
       "category": "Jacket",
-      "image": "/assets/products/jacket4.jpg",
+      "image": "/assets/clothes/jacket/jacket-4.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -97,7 +97,7 @@
       "description": "Comfortable windbreaker jacket for daily wear.",
       "price": 65.00,
       "category": "Jacket",
-      "image": "/assets/products/jacket5.jpg",
+      "image": "/assets/clothes/jacket/jacket-5.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -106,7 +106,7 @@
       "description": "Warm puffer jacket ideal for snowy days.",
       "price": 190.50,
       "category": "Jacket",
-      "image": "/assets/products/jacket6.jpg",
+      "image": "/assets/clothes/jacket/jacket-6.jpg",
       "sellerId": "seller-003"
     },
   
@@ -117,7 +117,7 @@
       "description": "Bright t-shirt perfect for kids' fun days.",
       "price": 25.00,
       "category": "Kids",
-      "image": "/assets/products/kids1.jpg",
+      "image": "/assets/clothes/kids/kids-1.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -126,7 +126,7 @@
       "description": "Cute denim overalls for kids.",
       "price": 35.99,
       "category": "Kids",
-      "image": "/assets/products/kids2.jpg",
+      "image": "/assets/clothes/kids/kids-2.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -135,7 +135,7 @@
       "description": "Warm jacket for cold days at the playground.",
       "price": 59.99,
       "category": "Kids",
-      "image": "/assets/products/kids3.jpg",
+      "image": "/assets/clothes/kids/kids-3.jpg",
       "sellerId": "seller-003"
     },
     {
@@ -144,7 +144,7 @@
       "description": "Lovely floral dress for little girls.",
       "price": 48.00,
       "category": "Kids",
-      "image": "/assets/products/kids4.jpg",
+      "image": "/assets/clothes/kids/kids-4.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -153,7 +153,7 @@
       "description": "Comfortable hoodie for boys and girls.",
       "price": 40.00,
       "category": "Kids",
-      "image": "/assets/products/kids5.jpg",
+      "image": "/assets/clothes/kids/kids-5.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -162,7 +162,7 @@
       "description": "Soft pajama set for cozy bedtime.",
       "price": 30.00,
       "category": "Kids",
-      "image": "/assets/products/kids6.jpg",
+      "image": "/assets/clothes/kids/kids-6.jpg",
       "sellerId": "seller-003"
     },
   
@@ -173,7 +173,7 @@
       "description": "Classic white shirt for any occasion.",
       "price": 59.99,
       "category": "Shirt",
-      "image": "/assets/products/shirt1.jpg",
+      "image": "/assets/clothes/shirt/shirt-1.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -182,7 +182,7 @@
       "description": "Warm flannel shirt with plaid design.",
       "price": 68.50,
       "category": "Shirt",
-      "image": "/assets/products/shirt2.jpg",
+      "image": "/assets/clothes/shirt/shirt-2.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -191,7 +191,7 @@
       "description": "Breathable linen shirt for hot days.",
       "price": 70.00,
       "category": "Shirt",
-      "image": "/assets/products/shirt3.jpg",
+      "image": "/assets/clothes/shirt/shirt-3.jpg",
       "sellerId": "seller-003"
     },
     {
@@ -200,7 +200,7 @@
       "description": "Modern slim fit shirt for a sharp look.",
       "price": 80.00,
       "category": "Shirt",
-      "image": "/assets/products/shirt4.jpg",
+      "image": "/assets/clothes/shirt/shirt-4.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -209,7 +209,7 @@
       "description": "Casual denim shirt with button details.",
       "price": 75.00,
       "category": "Shirt",
-      "image": "/assets/products/shirt5.jpg",
+      "image": "/assets/clothes/shirt/shirt-5.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -218,7 +218,7 @@
       "description": "Professional shirt with striped pattern.",
       "price": 90.00,
       "category": "Shirt",
-      "image": "/assets/products/shirt6.jpg",
+      "image": "/assets/clothes/shirt/shirt-6.jpg",
       "sellerId": "seller-003"
     },
   
@@ -229,7 +229,7 @@
       "description": "Trendy t-shirt with modern print.",
       "price": 35.00,
       "category": "T-shirt",
-      "image": "/assets/products/tshirt1.jpg",
+      "image": "/assets/clothes/t-shirt/t-shirt-1.png",
       "sellerId": "seller-001"
     },
     {
@@ -238,7 +238,7 @@
       "description": "Simple, everyday basic white tee.",
       "price": 20.00,
       "category": "T-shirt",
-      "image": "/assets/products/tshirt2.jpg",
+      "image": "/assets/clothes/t-shirt/t-shirt-2.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -247,7 +247,7 @@
       "description": "Retro rock band inspired t-shirt.",
       "price": 42.00,
       "category": "T-shirt",
-      "image": "/assets/products/tshirt3.jpg",
+      "image": "/assets/clothes/t-shirt/t-shirt-3.jpg",
       "sellerId": "seller-003"
     },
     {
@@ -256,7 +256,7 @@
       "description": "Athletic inspired jersey t-shirt.",
       "price": 38.00,
       "category": "T-shirt",
-      "image": "/assets/products/tshirt4.jpg",
+      "image": "/assets/clothes/t-shirt/t-shirt-4.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -265,7 +265,7 @@
       "description": "Comfortable t-shirt with chest pocket.",
       "price": 28.50,
       "category": "T-shirt",
-      "image": "/assets/products/tshirt5.jpg",
+      "image": "/assets/clothes/t-shirt/t-shirt-5.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -274,7 +274,7 @@
       "description": "Colorful tie-dye designed t-shirt.",
       "price": 40.00,
       "category": "T-shirt",
-      "image": "/assets/products/tshirt6.jpg",
+      "image": "/assets/clothes/t-shirt/t-shirt-6.jpg",
       "sellerId": "seller-003"
     },
   
@@ -285,7 +285,7 @@
       "description": "Formal trousers for office and events.",
       "price": 99.00,
       "category": "Trouser",
-      "image": "/assets/products/trouser1.jpg",
+      "image": "/assets/clothes/trouser/trouser-1.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -294,7 +294,7 @@
       "description": "Comfortable jogger pants for casual wear.",
       "price": 55.00,
       "category": "Trouser",
-      "image": "/assets/products/trouser2.jpg",
+      "image": "/assets/clothes/trouser/trouser-2.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -303,7 +303,7 @@
       "description": "Modern chinos for smart casual outfits.",
       "price": 80.00,
       "category": "Trouser",
-      "image": "/assets/products/trouser3.jpg",
+      "image": "/assets/clothes/trouser/trouser-3.jpg",
       "sellerId": "seller-003"
     },
     {
@@ -312,7 +312,7 @@
       "description": "Stylish high waist trousers for women.",
       "price": 92.50,
       "category": "Trouser",
-      "image": "/assets/products/trouser4.jpg",
+      "image": "/assets/clothes/trouser/trouser-4.jpg",
       "sellerId": "seller-001"
     },
     {
@@ -321,7 +321,7 @@
       "description": "Durable cargo pants with multiple pockets.",
       "price": 65.00,
       "category": "Trouser",
-      "image": "/assets/products/trouser5.jpg",
+      "image": "/assets/clothes/trouser/trouser-5.jpg",
       "sellerId": "seller-002"
     },
     {
@@ -330,7 +330,7 @@
       "description": "Comfortable wide-leg pants for a relaxed look.",
       "price": 88.00,
       "category": "Trouser",
-      "image": "/assets/products/trouser6.jpg",
+      "image": "/assets/clothes/trouser/trouser-6.jpg",
       "sellerId": "seller-003"
     }
   ]

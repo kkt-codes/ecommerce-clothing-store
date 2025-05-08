@@ -1,35 +1,54 @@
-// Info + Contact Seller
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import ContactSellerButton from "../components/ContactSellerButton";
+// Removed ContactSellerButton for now- to focus on cart
+// import ContactSellerButton from "../components/ContactSellerButton";
 import { useBuyerAuth } from "../hooks/useBuyerAuth";
+import { useCart } from "../context/CartContext"; 
+import productsData from "../data/products.json"; // Import static data directly for simplicity here
 
-/* Product Details Page */
 export default function ProductDetails() {
-  const { id } = useParams(); // Get product ID from URL
+  const { id } = useParams();
   const [product, setProduct] = useState(null);
-  const { isAuthenticated, buyerData } = useBuyerAuth(); // Get buyer info
+  const [quantity, setQuantity] = useState(1); // State for quantity
+  const { isAuthenticated } = useBuyerAuth(); // Removed buyerData for now as it's not directly used in this simplified add to cart
+  const { addToCart } = useCart();
 
-  // Load product on mount
   useEffect(() => {
-    // First, check localStorage (in case seller added products)
+    // Simplified product fetching for this step
+    // In a real app, you'd fetch or use your useFetchCached hook
+    let foundProduct = null;
     const localProducts = JSON.parse(localStorage.getItem("products")) || [];
-
+    
     if (localProducts.length > 0) {
-      const found = localProducts.find((p) => p.id === id);
-      setProduct(found);
-    } else {
-      // Fallback: Fetch from static JSON
-      fetch("/data/products.json")
-        .then((res) => res.json())
-        .then((data) => {
-          const found = data.find((p) => p.id === id);
-          setProduct(found);
-        })
-        .catch((err) => console.error("Error loading product:", err));
+        foundProduct = localProducts.find((p) => p.id === id);
     }
+    
+    if (!foundProduct) {
+        foundProduct = productsData.find((p) => p.id === id);
+    }
+    setProduct(foundProduct);
+
+    // Reset quantity when product changes
+    setQuantity(1);
+
   }, [id]);
+
+  const handleQuantityChange = (e) => {
+    const newQuantity = parseInt(e.target.value, 10);
+    if (newQuantity >= 1) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product, quantity);
+      // alert(`${quantity} of ${product.name} added to cart!`); // Feedback
+      console.log(`${quantity} of ${product.name} added to cart!`);
+    }
+  };
+
+  // Removed old handleOrder function for now
 
   if (!product) {
     return (
@@ -42,58 +61,47 @@ export default function ProductDetails() {
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        
-        {/* Product Image */}
         <img
-          src={product.image}
+          src={product.image || '/assets/placeholder.png'} // Added placeholder
           alt={product.name}
-          className="w-full h-[400px] object-cover rounded-lg shadow-lg"
+          className="w-full h-auto md:h-[400px] object-cover rounded-lg shadow-lg"
         />
-
-        {/* Product Details */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p className="text-2xl text-blue-600 font-bold">${product.price}</p>
-          <p className="text-gray-600">{product.description}</p>
-          <p className="text-sm text-gray-400">Category: {product.category}</p>
+          <p className="text-2xl text-blue-600 font-bold">${product.price.toFixed(2)}</p>
+          <p className="text-gray-700 leading-relaxed">{product.description}</p>
+          <p className="text-sm text-gray-500">Category: {product.category}</p>
 
-          {/* Contact Seller */}
-          <ContactSellerButton sellerId={product.sellerId} />
+          {/* Quantity Selector */}
+          <div className="flex items-center gap-3 mt-4">
+            <label htmlFor="quantity" className="font-semibold">Quantity:</label>
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              value={quantity}
+              onChange={handleQuantityChange}
+              min="1"
+              className="border rounded w-20 p-2 text-center"
+            />
+          </div>
 
-          {/* ======= Order Now Button ======= */}
-          {isAuthenticated ? (
-            <button
-              onClick={() => handleOrder()}
-              className="mt-4 px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition"
-            >
-              Order Now
-            </button>
-          ) : (
-            <p className="text-red-500 text-sm mt-4">Please login as Buyer to order.</p>
-          )}
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleAddToCart}
+            className="mt-4 px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition text-lg font-semibold"
+          >
+            Add to Cart
+          </button>
+
+          {/* Contact Seller Button - kept  */}
+          {/* <div className="mt-4">
+             <ContactSellerButton sellerId={product.sellerId} />
+          </div> */}
+
+          {/* Message for non-logged in users regarding ordering will be handled by cart page */}
         </div>
       </div>
     </div>
   );
-
-  // Handle Order
-  function handleOrder() {
-    const orders = JSON.parse(localStorage.getItem("orders")) || [];
-
-    const newOrder = {
-      id: `order-${Date.now()}`,
-      buyerId: buyerData.id,
-      buyerName: `${buyerData.firstName} ${buyerData.lastName}`,
-      productId: product.id,
-      productName: product.name,
-      productPrice: product.price,
-      date: new Date().toLocaleString()
-    };
-
-    orders.push(newOrder);
-    localStorage.setItem("orders", JSON.stringify(orders));
-
-    alert("Order placed successfully!");
-  }
 }
-

@@ -17,12 +17,12 @@ export default function ProductList() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Categories (fixed as per your project)
+  // Categories (fixed as per project)
   const categories = ["Dress", "Jacket", "Kids", "Shirt", "T-shirt", "Trouser"];
 
   // Fetch mock products
   useEffect(() => {
-    fetch("/data/products.json")
+    fetch("src/data/products.json")
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);

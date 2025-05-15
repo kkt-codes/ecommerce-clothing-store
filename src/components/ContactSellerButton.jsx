@@ -1,46 +1,47 @@
-// Button to contact seller
-
+// src/components/ContactSellerButton.jsx
 import { useBuyerAuth } from "../hooks/useBuyerAuth";
 import { useNavigate } from "react-router-dom";
+import { useSignupSigninModal } from "../hooks/useSignupSigninModal.jsx"; 
+import toast from 'react-hot-toast';
 
-/* Contact Seller Button */
-export default function ContactSellerButton({ sellerId }) {
+export default function ContactSellerButton({ sellerId, productName }) { // Added productName for better toast message
   const { isAuthenticated, buyerData } = useBuyerAuth();
   const navigate = useNavigate();
+  const { openModal, switchToTab } = useSignupSigninModal(); // Assuming you might want to open modal
 
   const handleContact = () => {
     if (!isAuthenticated) {
-      alert("Please login as a Buyer to contact sellers!");
-      navigate("/");
+      toast.error("Please login as a Buyer to contact sellers!"); // Replaced alert
+      // Optionally, open the login modal
+      // switchToTab("signin");
+      // openModal();
       return;
     }
 
-    // Create simple message (in real app, this would be more complex)
     const messages = JSON.parse(localStorage.getItem("messages")) || [];
-
     const newMessage = {
       id: `message-${Date.now()}`,
       senderId: buyerData.id,
       senderName: `${buyerData.firstName} ${buyerData.lastName}`,
       receiverId: sellerId,
-      content: "Hello! Is this product still available?",
+      // Improved message content
+      content: `Hello, I'm interested in your product: ${productName || 'the listed item'}. Is it still available?`,
       date: new Date().toLocaleString()
     };
 
     messages.push(newMessage);
     localStorage.setItem("messages", JSON.stringify(messages));
 
-    alert("Message sent to seller!");
-    navigate("/buyer/messages");
+    toast.success("Message sent to seller!"); // Replaced alert
+    navigate("/buyer/messages"); // Or stay on page, or give option
   };
 
   return (
     <button
       onClick={handleContact}
-      className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+      className="w-full px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300 font-semibold"
     >
       Contact Seller
     </button>
   );
 }
-

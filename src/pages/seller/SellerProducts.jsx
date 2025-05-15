@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import { useAuth } from "../../hooks/useAuth";
+import toast from 'react-hot-toast';
 
 /* Seller Products Management Page */
 export default function SellerProducts() {
@@ -32,13 +33,50 @@ export default function SellerProducts() {
   }, [sellerData]);
 
   // Handle Delete Product
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      const updatedProducts = sellerProducts.filter((p) => p.id !== id);
-      setSellerProducts(updatedProducts);
-      // In real backend, you would send DELETE request
-      alert("Product deleted successfully!");
-    }
+  const handleDelete = (productId, productName) => {
+    toast(
+      (t) => ( // t is the toast instance, allows dismissing programmatically
+        <div className="flex flex-col items-center p-2">
+          <p className="text-sm font-medium text-gray-900 mb-2">
+            Delete "{productName}"?
+          </p>
+          <p className="text-xs text-gray-600 mb-3">
+            Are you sure you want to delete this product? This action cannot be undone.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                // Actual delete logic
+                const localProducts = JSON.parse(localStorage.getItem("products")) || [];
+                const updatedProducts = localProducts.filter((p) => p.id !== productId);
+                localStorage.setItem("products", JSON.stringify(updatedProducts));
+                setSellerProducts(updatedProducts); // Update local state to re-render
+                toast.success("Product deleted.", { id: t.id }); // Dismiss confirm toast and show success
+              }}
+              className="px-3 py-1.5 text-xs font-semibold text-white bg-red-600 rounded-md hover:bg-red-700"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)} // Dismiss the toast
+              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: Infinity, // Keep open until dismissed by user action
+        position: "top-center",
+        style: {
+          background: 'white', // Custom style for confirm toast
+          color: 'black',
+          border: '1px solid #e0e0e0',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        },
+      }
+    );
   };
 
   return (

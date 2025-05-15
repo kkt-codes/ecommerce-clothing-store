@@ -1,20 +1,41 @@
-// src/components/BuyerProtectedRoute.jsx
-import { Navigate } from "react-router-dom";
-import { useBuyerAuth } from "../hooks/useBuyerAuth";
+// This file is for protecting Buyer-specific routes.
+import React, { useEffect } from 'react'; // Single React import
+import { Navigate } from 'react-router-dom';
+import { useBuyerAuth } from '../hooks/useBuyerAuth'; // Buyer auth hook
+import { useSignupSigninModal } from '../hooks/useSignupSigninModal';
+import toast from 'react-hot-toast'; // For user feedback
 
-/* 
-  BuyerProtectedRoute
-  - Used to protect Buyer-only routes
-  - Redirects to Buyer Login if not authenticated
-*/
 export default function BuyerProtectedRoute({ children }) {
-  const { isAuthenticated } = useBuyerAuth();
+  // Now also destructure isLoading from the auth hook
+  const { isAuthenticated, isLoading } = useBuyerAuth(); 
+  const { openModal, switchToTab, isOpen: isModalOpen } = useSignupSigninModal();
 
+  useEffect(() => {
+    // Only attempt to open modal if loading is complete and user is not authenticated
+    // and modal is not already open.
+    if (!isLoading && !isAuthenticated && !isModalOpen) {
+      toast.error("Please sign in as a Buyer to access this page.");
+      switchToTab('signin');
+      openModal();
+    }
+  }, [isLoading, isAuthenticated, isModalOpen, openModal, switchToTab]);
+
+  if (isLoading) {
+    // While checking auth status, show a loading indicator or return null.
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-gray-500 animate-pulse">Authenticating Buyer...</p>
+        {/* You could add a spinner icon here */}
+      </div>
+    );
+  }
+  
   if (!isAuthenticated) {
-    // If buyer is not logged in, redirect to buyer login page
-    return <Navigate to="/buyer/login" replace />;
+    // If loading is complete and user is not authenticated, redirect.
+    // The useEffect above will have triggered the modal.
+    return <Navigate to="/" replace />;
   }
 
-  // If authenticated, show the page
-  return children;
+  // If loading is complete and user is authenticated, render the protected content.
+  return children; 
 }

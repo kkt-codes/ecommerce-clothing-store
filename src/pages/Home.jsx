@@ -65,7 +65,7 @@ export default function Home() {
       >
         <div className="bg-black/60 absolute inset-0"></div> {/* Slightly darker overlay */}
         <div className="relative z-10 text-center p-4">
-          <SparklesIcon className="h-16 w-16 text-yellow-400 mx-auto mb-4" />
+          {/* <SparklesIcon className="h-16 w-16 text-yellow-400 mx-auto mb-4" /> */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 drop-shadow-lg">Discover Your Style</h1>
           <p className="text-lg sm:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
             Shop the latest trends in fashion. Unbeatable quality at prices you'll love.

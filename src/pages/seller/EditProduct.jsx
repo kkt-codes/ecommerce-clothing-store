@@ -1,9 +1,8 @@
-// Form
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import { useAuth } from "../../hooks/useAuth";
+import toast from 'react-hot-toast';
 
 /* Seller Edit Product Page */
 export default function EditProduct() {
@@ -40,7 +39,7 @@ export default function EditProduct() {
         image: product.image
       });
     } else {
-      alert("Product not found!");
+      toast.error("Product not found!");
       navigate("/seller/products");
     }
   }, [id, sellerData, navigate]);
@@ -60,7 +59,7 @@ export default function EditProduct() {
     const { name, description, price, category, image } = formData;
 
     if (!name || !description || !price || !category || !image) {
-      alert("Please fill in all fields.");
+      toast.error("Please fill in all fields.");
       return;
     }
 
@@ -73,7 +72,7 @@ export default function EditProduct() {
     });
 
     localStorage.setItem("products", JSON.stringify(updatedProducts));
-    alert("Product updated successfully!");
+    toast.success("Product updated successfully!");
     navigate("/seller/products");
   };
 

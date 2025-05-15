@@ -26,6 +26,7 @@ export default function BuyerDashboard() {
     { label: "My Orders", path: "/buyer/orders", icon: ListBulletIcon },
     { label: "Messages", path: "/buyer/messages", icon: ChatBubbleLeftEllipsisIcon },
     { label: "My Profile", path: "/buyer/profile", icon: UserCircleIcon },
+    { label: "My Favorites", path: "/buyer/favorites", icon: HeartIcon },
     // { label: "Wishlist", path: "/buyer/wishlist", icon: HeartIcon }, // Future: for liked products
   ];
 

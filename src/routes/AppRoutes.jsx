@@ -24,6 +24,7 @@ import BuyerDashboard from "../pages/buyer/BuyerDashboard";
 import BuyerOrders from "../pages/buyer/BuyerOrders";
 import BuyerMessages from "../pages/buyer/BuyerMessages";
 import BuyerProfile from "../pages/buyer/BuyerProfile";
+import BuyerFavoritesPage from "../pages/buyer/BuyerFavorites.jsx"; 
 
 // Protected Route Components
 import ProtectedRoute from "../components/ProtectedRoute";      // For Sellers
@@ -92,6 +93,11 @@ export default function AppRoutes() {
       <Route path="/buyer/profile" element={
         <BuyerProtectedRoute>
           <BuyerProfile />
+        </BuyerProtectedRoute>
+      } />
+      <Route path="/buyer/favorites" element={
+        <BuyerProtectedRoute>
+          <BuyerFavoritesPage />
         </BuyerProtectedRoute>
       } />
 

@@ -1,6 +1,7 @@
 // src/context/CartContext.jsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useBuyerAuth } from '../hooks/useBuyerAuth'; // To associate cart with logged-in buyer
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useBuyerAuth } from '../hooks/useBuyerAuth'; 
+import toast from 'react-hot-toast';
 
 const CartContext = createContext();
 
@@ -10,67 +11,89 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const { buyerData } = useBuyerAuth(); // Get current buyer
+  const { buyerData, isAuthenticated } = useBuyerAuth();
 
-  // --- Persisting Cart to localStorage ---
-  // Load cart from localStorage when component mounts or buyer changes
+  // Load cart from localStorage or merge guest cart on login
   useEffect(() => {
-    if (buyerData) {
-      const storedCart = localStorage.getItem(`cart_${buyerData.id}`);
-      if (storedCart) {
-        setCartItems(JSON.parse(storedCart));
-      } else {
-        setCartItems([]); // No cart for this buyer, or clear previous guest cart
+    let loadedCart = [];
+    if (isAuthenticated && buyerData?.id) {
+      // User is logged in
+      const buyerCartKey = `cart_${buyerData.id}`;
+      const storedBuyerCartString = localStorage.getItem(buyerCartKey);
+      let buyerCartItems = storedBuyerCartString ? JSON.parse(storedBuyerCartString) : [];
+
+      const guestCartString = localStorage.getItem('guest_cart');
+      if (guestCartString) {
+        const guestCartItems = JSON.parse(guestCartString);
+        if (guestCartItems.length > 0) {
+          // Merge guest cart into buyer's cart
+          const mergedCart = [...buyerCartItems];
+          guestCartItems.forEach(guestItem => {
+            const existingItemIndex = mergedCart.findIndex(item => item.id === guestItem.id);
+            if (existingItemIndex > -1) {
+              // Item exists, update quantity (e.g., sum or take guest's, let's sum for now)
+              mergedCart[existingItemIndex].quantity += guestItem.quantity;
+            } else {
+              // Item doesn't exist, add it
+              mergedCart.push(guestItem);
+            }
+          });
+          buyerCartItems = mergedCart;
+          toast.success("Guest cart items have been merged into your account cart!");
+        }
+        localStorage.removeItem('guest_cart'); // Clear guest cart after merging or if empty
       }
+      loadedCart = buyerCartItems;
+      // Save the potentially merged cart back to the buyer's storage
+      localStorage.setItem(buyerCartKey, JSON.stringify(loadedCart));
+
     } else {
-      // Handle guest cart (optional, for now, let's clear if no buyer)
-      // For a guest cart, you might use a generic key like 'guest_cart'
-      const storedGuestCart = localStorage.getItem('guest_cart');
-      if (storedGuestCart) {
-        setCartItems(JSON.parse(storedGuestCart));
-      } else {
-        setCartItems([]);
-      }
+      // User is a guest or logged out
+      const guestCartString = localStorage.getItem('guest_cart');
+      loadedCart = guestCartString ? JSON.parse(guestCartString) : [];
     }
-  }, [buyerData]);
+    setCartItems(loadedCart);
+  }, [isAuthenticated, buyerData]); // Effect runs on auth state change
 
   // Save cart to localStorage whenever cartItems change
   useEffect(() => {
-    if (buyerData) {
-      localStorage.setItem(`cart_${buyerData.id}`, JSON.stringify(cartItems));
-      localStorage.removeItem('guest_cart'); // Clear guest cart if user logs in
-    } else {
-      localStorage.setItem('guest_cart', JSON.stringify(cartItems));
+    try {
+      if (isAuthenticated && buyerData?.id) {
+        localStorage.setItem(`cart_${buyerData.id}`, JSON.stringify(cartItems));
+      } else {
+        localStorage.setItem('guest_cart', JSON.stringify(cartItems));
+      }
+    } catch (error) {
+        console.error("Error saving cart to localStorage:", error);
+        // Potentially notify user if storage is full or unavailable
     }
-  }, [cartItems, buyerData]);
+  }, [cartItems, isAuthenticated, buyerData]);
 
 
-  const addToCart = (product, quantity = 1) => {
+  const addToCart = useCallback((product, quantity = 1) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
       if (existingItem) {
-        // If item exists, update its quantity
         return prevItems.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
-        // If item doesn't exist, add it to the cart
         return [...prevItems, { ...product, quantity }];
       }
     });
-    // We'll add a toast notification here later
-  };
+    // Toast notification is handled in ProductCard/ProductDetails
+  }, []);
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = useCallback((productId) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
-  };
+    // Toast notification handled where this is called (e.g., Cart.jsx)
+  }, []);
 
-  const updateQuantity = (productId, quantity) => {
+  const updateQuantity = useCallback((productId, quantity) => {
     if (quantity <= 0) {
-      // If quantity is 0 or less, remove the item
-      removeFromCart(productId);
+      removeFromCart(productId); // This will trigger its own toast if called from Cart.jsx
     } else {
       setCartItems(prevItems =>
         prevItems.map(item =>
@@ -78,19 +101,20 @@ export const CartProvider = ({ children }) => {
         )
       );
     }
-  };
+  }, [removeFromCart]); // Added removeFromCart to dependencies
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCartItems([]);
-  };
+    // Toast notification handled where this is called (e.g., Cart.jsx)
+  }, []);
 
-  const getCartTotal = () => {
+  const getCartTotal = useCallback(() => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  };
+  }, [cartItems]);
 
-  const getItemCount = () => {
+  const getItemCount = useCallback(() => {
     return cartItems.reduce((count, item) => count + item.quantity, 0);
-  };
+  }, [cartItems]);
 
   const value = {
     cartItems,

@@ -1,45 +1,45 @@
+// src/pages/seller/AddProduct.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuthContext } from "../../context/AuthContext"; // Import useAuthContext
 import toast from 'react-hot-toast';
-import { invalidateCacheEntry } from "../../hooks/useFetchCached";
-import { CameraIcon, XCircleIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline"; // Added ArrowUpTrayIcon
+import { CameraIcon, XCircleIcon, ArrowUpTrayIcon, ChartBarIcon, ArchiveBoxIcon, PlusCircleIcon, ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
 
-/* Seller Add Product Page */
 export default function AddProduct() {
-  const { sellerData } = useAuth();
+  // Use AuthContext to get current user (seller) data and loading state
+  const { currentUser, isLoading: isAuthLoading, userRole } = useAuthContext();
   const navigate = useNavigate();
 
   const initialFormData = {
     name: "",
     description: "",
     price: "",
-    category: "Dress", // Default category
+    category: "Dress", 
   };
 
   const [formData, setFormData] = useState(initialFormData);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false); // For submit button state
+  const [selectedFile, setSelectedFile] = useState(null); 
+  const [imagePreview, setImagePreview] = useState("");   
+  const [errors, setErrors] = useState({});               
+  const [isSubmitting, setIsSubmitting] = useState(false); 
 
+  // Define sellerLinks here, including icons
   const sellerLinks = [
-    { label: "Dashboard", path: "/seller/dashboard" },
-    { label: "My Products", path: "/seller/products" },
-    { label: "Add Product", path: "/seller/add-product" },
-    { label: "Messages", path: "/seller/messages" }
+    { label: "Dashboard", path: "/seller/dashboard", icon: ChartBarIcon },
+    { label: "My Products", path: "/seller/products", icon: ArchiveBoxIcon },
+    { label: "Add Product", path: "/seller/add-product", icon: PlusCircleIcon },
+    { label: "Messages", path: "/seller/messages", icon: ChatBubbleLeftEllipsisIcon }
   ];
 
-  // Clean up the object URL
   useEffect(() => {
-    const currentPreview = imagePreview; // Capture current value for cleanup
+    const currentPreview = imagePreview; 
     return () => {
       if (currentPreview && currentPreview.startsWith("blob:")) {
         URL.revokeObjectURL(currentPreview);
       }
     };
-  }, [imagePreview]); // Rerun only if imagePreview itself changes
+  }, [imagePreview]); 
 
   const validateField = useCallback((name, value) => {
     let error = "";
@@ -68,8 +68,6 @@ export default function AddProduct() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
-    // Validate on change and clear error for the field
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error || null }));
   };
@@ -80,11 +78,10 @@ export default function AddProduct() {
     setErrors(prev => ({ ...prev, [name]: error || null }));
   };
 
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // Max 5MB
+      if (file.size > 5 * 1024 * 1024) { 
         setErrors(prev => ({ ...prev, image: "File is too large (max 5MB)." }));
         setSelectedFile(null);
         setImagePreview("");
@@ -137,17 +134,20 @@ export default function AddProduct() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    if (!currentUser || userRole !== 'Seller') {
+        toast.error("You must be signed in as a Seller to add products.");
+        setIsSubmitting(false);
+        return;
+    }
+
     if (!validateForm()) {
       toast.error("Please correct the errors in the form.");
       setIsSubmitting(false);
       return;
     }
     
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // For now, we'll use a placeholder image path when saving to localStorage.
-    // In a real app, you'd upload 'selectedFile' to a server and get back a URL.
     const mockImageFileName = `${formData.category.toLowerCase().replace(/\s+/g, '-')}-${formData.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()%1000}.jpg`;
     const mockImageUrl = `/assets/products/${mockImageFileName}`; 
 
@@ -157,27 +157,52 @@ export default function AddProduct() {
       description: formData.description.trim(),
       price: parseFloat(formData.price),
       category: formData.category,
-      image: mockImageUrl, // Use the generated mock URL
-      sellerId: sellerData.id 
+      image: mockImageUrl, 
+      sellerId: currentUser.id // Use ID from AuthContext's currentUser
     };
 
     const existingProducts = JSON.parse(localStorage.getItem("products")) || [];
     const updatedProducts = [...existingProducts, newProduct];
     localStorage.setItem("products", JSON.stringify(updatedProducts));
-
-    invalidateCacheEntry("allProducts");
     
+    invalidateCacheEntry("allProducts"); // Invalidate product cache
+
     toast.success("Product added successfully!");
     setFormData(initialFormData); 
-    removeImagePreview(); // This will also clear errors.image
-    setErrors({}); // Clear any remaining errors
+    removeImagePreview(); 
+    setErrors({}); 
     setIsSubmitting(false);
     navigate("/seller/products");
   };
 
+  // Handle loading state from AuthContext
+  if (isAuthLoading) {
+    return (
+        <div className="flex min-h-screen bg-gray-50">
+            {/* Optionally show a simplified sidebar or just a loading message */}
+            <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
+                <p className="text-gray-500 animate-pulse">Loading form...</p>
+            </main>
+        </div>
+    );
+  }
+  
+  // Fallback if somehow user is not a seller (ProtectedRoute should handle this)
+  if (!currentUser || userRole !== 'Seller') {
+    return (
+        <div className="flex min-h-screen bg-gray-50">
+             <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
+                <p className="text-gray-600">Access Denied. Only Sellers can add products.</p>
+            </main>
+        </div>
+    );
+  }
+
+
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar links={sellerLinks} />
+      {/* Pass user info from AuthContext to Sidebar */}
+      <Sidebar links={sellerLinks} userRole="Seller" userName={currentUser?.firstName} />
 
       <main className="flex-1 p-6 sm:p-8">
         <header className="mb-8">
@@ -257,7 +282,7 @@ export default function AddProduct() {
                   <p className="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 5MB</p>
                 </div>
               ) : (
-                <div className="relative group w-full max-w-xs mx-auto"> {/* Constrain preview size */}
+                <div className="relative group w-full max-w-xs mx-auto"> 
                   <img src={imagePreview} alt="Product Preview" className="mx-auto h-48 w-auto object-contain rounded-md shadow-md" />
                   <button
                     type="button"
@@ -276,7 +301,7 @@ export default function AddProduct() {
           <div className="pt-4">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isAuthLoading} // Also disable if auth is still loading
               className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300 font-semibold disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (

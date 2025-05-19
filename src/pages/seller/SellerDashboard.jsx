@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import Sidebar from "../../components/Sidebar";
-import { useAuth } from "../../hooks/useAuth";
+import Sidebar from "../../components/Sidebar"; 
+import { useAuthContext } from "../../context/AuthContext"; // Use the global AuthContext
 import {
   ArchiveBoxIcon,
   CurrencyDollarIcon,
   ChatBubbleLeftEllipsisIcon,
   PlusCircleIcon,
-  ChartBarIcon, // Using ChartBarIcon for Dashboard overview
-  EyeIcon // Kept EyeIcon as an alternative or for other uses
+  ChartBarIcon, 
+  EyeIcon 
 } from "@heroicons/react/24/outline";
-import productsData from "../../data/products.json"; 
+import productsData from "../../data/products.json"; // Assuming this is in src/data/
 
 export default function SellerDashboard() {
-  const { sellerData, isLoading: isAuthLoading } = useAuth(); 
+  // Use AuthContext to get current user data and loading state
+  const { currentUser, isLoading: isAuthLoading, userRole } = useAuthContext(); 
+  
   const [productCount, setProductCount] = useState(0);
   const [messageCount, setMessageCount] = useState(0);
   const [totalSales, setTotalSales] = useState(0); 
@@ -27,19 +29,18 @@ export default function SellerDashboard() {
   ];
 
   useEffect(() => {
-    if (sellerData) {
-      // In a real app, this data would likely come from an API endpoint for the seller
-      const sellerProducts = productsData.filter(p => String(p.sellerId) === String(sellerData.id));
+    // Ensure currentUser is available and is a Seller before processing seller-specific data
+    if (currentUser && userRole === 'Seller') {
+      const sellerProducts = productsData.filter(p => String(p.sellerId) === String(currentUser.id));
       setProductCount(sellerProducts.length);
       
       const allMessages = JSON.parse(localStorage.getItem("messages")) || [];
-      const sellerReceivedMessages = allMessages.filter(msg => String(msg.receiverId) === String(sellerData.id));
+      const sellerReceivedMessages = allMessages.filter(msg => String(msg.receiverId) === String(currentUser.id));
       setMessageCount(sellerReceivedMessages.length);
 
-      // Mock total sales calculation
-      setTotalSales(sellerProducts.reduce((acc, curr) => acc + (curr.price * (Math.floor(Math.random() * 5) + 1)), 0)); // Mock sales
+      setTotalSales(sellerProducts.reduce((acc, curr) => acc + (curr.price * (Math.floor(Math.random() * 5) + 1)), 0)); 
     }
-  }, [sellerData]);
+  }, [currentUser, userRole]); // Depend on currentUser and userRole from AuthContext
 
   // Mock data for recent activity
   const recentActivity = [
@@ -48,6 +49,7 @@ export default function SellerDashboard() {
     { id: 3, text: `Your product "Classic Blue Jeans" received 10 views today.`, time: "1 day ago", type: "stats", linkTo: "#" }, 
   ].slice(0, 3); 
 
+  // Show loading state while AuthContext is initializing
   if (isAuthLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -56,25 +58,25 @@ export default function SellerDashboard() {
     );
   }
 
-  if (!sellerData) {
-    // This case should ideally be handled by ProtectedRoute redirecting.
-    // Fallback if ProtectedRoute logic changes or has issues.
+  // If not authenticated or not a seller (though ProtectedRoute should handle this)
+  if (!currentUser || userRole !== 'Seller') {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <p>Seller data not available. Please ensure you are logged in as a seller.</p>
+        <p>Access denied or user data not available. Please ensure you are signed in as a Seller.</p>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar links={sellerLinks} userRole="Seller" userName={sellerData.firstName} />
+      {/* Pass currentUser.firstName for userName */}
+      <Sidebar links={sellerLinks} userRole="Seller" userName={currentUser.firstName} />
 
       <main className="flex-1 p-6 sm:p-8 space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-              Welcome back, {sellerData.firstName}!
+              Welcome back, {currentUser.firstName}!
             </h1>
             <p className="text-sm text-gray-600 mt-1">
               Here's what's happening with your store today.
@@ -161,7 +163,7 @@ export default function SellerDashboard() {
           <div className="bg-white p-6 rounded-xl shadow-lg">
             <h2 className="text-xl font-semibold text-gray-700 mb-5">Quick Links</h2>
             <ul className="space-y-3">
-              {sellerLinks.filter(link => link.path !== "/seller/dashboard").map(link => ( // Exclude dashboard link itself
+              {sellerLinks.filter(link => link.path !== "/seller/dashboard").map(link => ( 
                 <li key={link.path}>
                   <Link to={link.path} className="flex items-center gap-3 p-3 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-colors group">
                     {link.icon && <link.icon className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />}

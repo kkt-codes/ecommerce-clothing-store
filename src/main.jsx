@@ -6,17 +6,20 @@ import { BrowserRouter } from "react-router-dom";
 import { SignupSigninModalProvider } from "./hooks/useSignupSigninModal";
 import { CartProvider } from "./context/CartContext";
 import { FavoritesProvider } from "./context/FavoritesContext";
+import { AuthProvider } from "./context/AuthContext";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <SignupSigninModalProvider>
-        <CartProvider>
-          <FavoritesProvider>
-            <App />
-          </FavoritesProvider>
-        </CartProvider>
-      </SignupSigninModalProvider>
+      <AuthProvider>
+        <SignupSigninModalProvider>
+          <CartProvider>
+            <FavoritesProvider>
+              <App />
+            </FavoritesProvider>
+          </CartProvider>
+        </SignupSigninModalProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>
 );

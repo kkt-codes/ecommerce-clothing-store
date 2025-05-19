@@ -1,41 +1,46 @@
-// This file is for protecting Buyer-specific routes.
-import React, { useEffect } from 'react'; // Single React import
+// This component protects routes intended ONLY for authenticated Buyers.
+import React, { useEffect } from 'react'; // React and useEffect are needed
 import { Navigate } from 'react-router-dom';
-import { useBuyerAuth } from '../hooks/useBuyerAuth'; // Buyer auth hook
+import { useAuthContext } from '../context/AuthContext'; // Use the global AuthContext
 import { useSignupSigninModal } from '../hooks/useSignupSigninModal';
-import toast from 'react-hot-toast'; // For user feedback
+import toast from 'react-hot-toast';
 
 export default function BuyerProtectedRoute({ children }) {
-  // Now also destructure isLoading from the auth hook
-  const { isAuthenticated, isLoading } = useBuyerAuth(); 
+  // Destructure isLoading, isAuthenticated, and userRole from AuthContext
+  const { isAuthenticated, isLoading, userRole } = useAuthContext(); 
   const { openModal, switchToTab, isOpen: isModalOpen } = useSignupSigninModal();
 
   useEffect(() => {
-    // Only attempt to open modal if loading is complete and user is not authenticated
-    // and modal is not already open.
+    // This effect handles prompting for sign-in if needed.
     if (!isLoading && !isAuthenticated && !isModalOpen) {
+      // If authentication check is complete, user is NOT authenticated, and modal is not already open:
       toast.error("Please sign in as a Buyer to access this page.");
-      switchToTab('signin');
-      openModal();
+      switchToTab('signin'); // Set modal to the sign-in tab
+      openModal();          // Open the sign-in modal
     }
   }, [isLoading, isAuthenticated, isModalOpen, openModal, switchToTab]);
 
   if (isLoading) {
-    // While checking auth status, show a loading indicator or return null.
+    // While the AuthContext is checking the initial authentication state, display a loading indicator.
     return (
       <div className="flex justify-center items-center min-h-screen">
         <p className="text-gray-500 animate-pulse">Authenticating Buyer...</p>
-        {/* You could add a spinner icon here */}
+        {/* Consider adding a more visual spinner here */}
       </div>
     );
   }
   
-  if (!isAuthenticated) {
-    // If loading is complete and user is not authenticated, redirect.
-    // The useEffect above will have triggered the modal.
-    return <Navigate to="/" replace />;
+  // After loading, if the user is not authenticated OR they are not a Buyer, redirect.
+  if (!isAuthenticated || userRole !== 'Buyer') {
+    // If not authenticated, the useEffect above will have already triggered the modal and toast.
+    // If authenticated but the wrong role (e.g., a Seller trying to access a Buyer route),
+    // show a specific error toast before redirecting.
+    if (isAuthenticated && userRole !== 'Buyer') {
+        toast.error("Access Denied. This page is for Buyers only.");
+    }
+    return <Navigate to="/" replace />; // Redirect to homepage
   }
 
-  // If loading is complete and user is authenticated, render the protected content.
+  // If loading is complete, user is authenticated, AND userRole is 'Buyer', render the protected children components.
   return children; 
 }

@@ -1,50 +1,48 @@
-/* import { Navigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-
-export default function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/seller/login" replace />;
-} */
-
-// This file is for protecting Seller-specific routes.
-import React, { useEffect } from 'react'; // Single React import
+// This component protects routes intended ONLY for authenticated Sellers.
+import React, { useEffect } from 'react'; // React and useEffect are needed
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth'; // Seller auth hook
+import { useAuthContext } from '../context/AuthContext'; // Use the global AuthContext
 import { useSignupSigninModal } from '../hooks/useSignupSigninModal';
-import toast from 'react-hot-toast'; // For user feedback
+import toast from 'react-hot-toast';
 
 export default function ProtectedRoute({ children }) {
-  // Now also destructure isLoading from the auth hook
-  const { isAuthenticated, isLoading } = useAuth(); 
+  // Destructure isLoading, isAuthenticated, and userRole from AuthContext
+  const { isAuthenticated, isLoading, userRole } = useAuthContext(); 
   const { openModal, switchToTab, isOpen: isModalOpen } = useSignupSigninModal();
 
   useEffect(() => {
-    // Only attempt to open modal if loading is complete and user is not authenticated
-    // and modal is not already open from another source.
+    // This effect handles prompting for sign-in if needed.
+    // It runs when isLoading, isAuthenticated, or isModalOpen changes.
     if (!isLoading && !isAuthenticated && !isModalOpen) {
+      // If authentication check is complete, user is NOT authenticated, and modal is not already open:
       toast.error("Please sign in as a Seller to access this page.");
-      switchToTab('signin');
-      openModal();
+      switchToTab('signin'); // Set modal to the sign-in tab
+      openModal();          // Open the sign-in modal
     }
   }, [isLoading, isAuthenticated, isModalOpen, openModal, switchToTab]);
   
   if (isLoading) {
-    // While checking auth status, show a loading indicator or return null.
-    // This prevents premature redirection or content rendering.
+    // While the AuthContext is checking the initial authentication state (e.g., from localStorage),
+    // display a loading indicator. This prevents premature redirection.
     return (
       <div className="flex justify-center items-center min-h-screen">
         <p className="text-gray-500 animate-pulse">Authenticating Seller...</p>
-        {/* You could add a spinner icon here */}
+        {/* Consider adding a more visual spinner here */}
       </div>
     ); 
   }
   
-  if (!isAuthenticated) {
-    // If loading is complete and user is not authenticated, redirect.
-    // The useEffect above will have triggered the modal.
-    return <Navigate to="/" replace />;
+  // After loading, if the user is not authenticated OR they are not a Seller, redirect.
+  if (!isAuthenticated || userRole !== 'Seller') {
+    // If not authenticated, the useEffect above will have already triggered the modal and toast.
+    // If authenticated but the wrong role (e.g., a Buyer trying to access a Seller route),
+    // show a specific error toast before redirecting.
+    if (isAuthenticated && userRole !== 'Seller') {
+        toast.error("Access Denied. This page is for Sellers only.");
+    }
+    return <Navigate to="/" replace />; // Redirect to homepage
   }
 
-  // If loading is complete and user is authenticated, render the protected content.
+  // If loading is complete, user is authenticated, AND userRole is 'Seller', render the protected children components.
   return children; 
 }

@@ -1,81 +1,102 @@
 // src/context/CartContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useBuyerAuth } from '../hooks/useBuyerAuth'; 
-import toast from 'react-hot-toast';
+import { useAuthContext } from './AuthContext'; // Import the global AuthContext
+import toast from 'react-hot-toast'; 
 
-const CartContext = createContext();
+const CartContext = createContext(null);
 
 export const useCart = () => {
-  return useContext(CartContext);
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
 };
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
-  const { buyerData, isAuthenticated } = useBuyerAuth();
+  // Use the global AuthContext to get current user details
+  const { currentUser, isAuthenticated, userRole, isLoading: authIsLoading } = useAuthContext(); 
 
   // Load cart from localStorage or merge guest cart on login
   useEffect(() => {
+    // Only proceed if auth loading is complete to avoid race conditions
+    if (authIsLoading) {
+      return; 
+    }
+
     let loadedCart = [];
-    if (isAuthenticated && buyerData?.id) {
-      // User is logged in
-      const buyerCartKey = `cart_${buyerData.id}`;
+    // Check if the authenticated user is a Buyer
+    if (isAuthenticated && currentUser && userRole === 'Buyer') {
+      const buyerCartKey = `cart_${currentUser.id}`;
       const storedBuyerCartString = localStorage.getItem(buyerCartKey);
       let buyerCartItems = storedBuyerCartString ? JSON.parse(storedBuyerCartString) : [];
 
       const guestCartString = localStorage.getItem('guest_cart');
       if (guestCartString) {
-        const guestCartItems = JSON.parse(guestCartString);
-        if (guestCartItems.length > 0) {
-          // Merge guest cart into buyer's cart
-          const mergedCart = [...buyerCartItems];
-          guestCartItems.forEach(guestItem => {
-            const existingItemIndex = mergedCart.findIndex(item => item.id === guestItem.id);
-            if (existingItemIndex > -1) {
-              // Item exists, update quantity (e.g., sum or take guest's, let's sum for now)
-              mergedCart[existingItemIndex].quantity += guestItem.quantity;
-            } else {
-              // Item doesn't exist, add it
-              mergedCart.push(guestItem);
-            }
-          });
-          buyerCartItems = mergedCart;
-          toast.success("Guest cart items have been merged into your account cart!");
+        try {
+          const guestCartItems = JSON.parse(guestCartString);
+          if (guestCartItems.length > 0) {
+            const mergedCart = [...buyerCartItems];
+            guestCartItems.forEach(guestItem => {
+              const existingItemIndex = mergedCart.findIndex(item => String(item.id) === String(guestItem.id));
+              if (existingItemIndex > -1) {
+                mergedCart[existingItemIndex].quantity += guestItem.quantity;
+              } else {
+                mergedCart.push(guestItem);
+              }
+            });
+            buyerCartItems = mergedCart;
+            toast.success("Guest cart items have been merged into your account cart!");
+          }
+        } catch (error) {
+            console.error("Error parsing guest cart for merge:", error);
         }
-        localStorage.removeItem('guest_cart'); // Clear guest cart after merging or if empty
+        localStorage.removeItem('guest_cart'); 
       }
       loadedCart = buyerCartItems;
       // Save the potentially merged cart back to the buyer's storage
       localStorage.setItem(buyerCartKey, JSON.stringify(loadedCart));
 
     } else {
-      // User is a guest or logged out
+      // User is a guest, not a Buyer, or logged out
       const guestCartString = localStorage.getItem('guest_cart');
-      loadedCart = guestCartString ? JSON.parse(guestCartString) : [];
+      try {
+        loadedCart = guestCartString ? JSON.parse(guestCartString) : [];
+      } catch (error) {
+        console.error("Error parsing guest cart:", error);
+        loadedCart = [];
+      }
     }
     setCartItems(loadedCart);
-  }, [isAuthenticated, buyerData]); // Effect runs on auth state change
+  }, [isAuthenticated, currentUser, userRole, authIsLoading]); // Effect runs on auth state change & auth loading completion
 
   // Save cart to localStorage whenever cartItems change
   useEffect(() => {
+    // Only save if auth state is determined (not loading)
+    if (authIsLoading) {
+        return;
+    }
     try {
-      if (isAuthenticated && buyerData?.id) {
-        localStorage.setItem(`cart_${buyerData.id}`, JSON.stringify(cartItems));
+      // Save to buyer-specific cart only if authenticated as a Buyer
+      if (isAuthenticated && currentUser && userRole === 'Buyer') {
+        localStorage.setItem(`cart_${currentUser.id}`, JSON.stringify(cartItems));
       } else {
+        // For guests or non-Buyers (e.g. Sellers, though they shouldn't typically use cart)
         localStorage.setItem('guest_cart', JSON.stringify(cartItems));
       }
     } catch (error) {
         console.error("Error saving cart to localStorage:", error);
-        // Potentially notify user if storage is full or unavailable
     }
-  }, [cartItems, isAuthenticated, buyerData]);
+  }, [cartItems, isAuthenticated, currentUser, userRole, authIsLoading]);
 
 
   const addToCart = useCallback((product, quantity = 1) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id);
+      const existingItem = prevItems.find(item => String(item.id) === String(product.id));
       if (existingItem) {
         return prevItems.map(item =>
-          item.id === product.id
+          String(item.id) === String(product.id)
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
@@ -83,33 +104,36 @@ export const CartProvider = ({ children }) => {
         return [...prevItems, { ...product, quantity }];
       }
     });
-    // Toast notification is handled in ProductCard/ProductDetails
+    // Toast for adding to cart is typically handled in the component calling addToCart (e.g., ProductCard)
   }, []);
 
   const removeFromCart = useCallback((productId) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
-    // Toast notification handled where this is called (e.g., Cart.jsx)
+    setCartItems(prevItems => prevItems.filter(item => String(item.id) !== String(productId)));
+    // Toast for removing from cart is handled in Cart.jsx
   }, []);
 
   const updateQuantity = useCallback((productId, quantity) => {
-    if (quantity <= 0) {
-      removeFromCart(productId); // This will trigger its own toast if called from Cart.jsx
+    const numericQuantity = Number(quantity); // Ensure quantity is a number
+    if (numericQuantity <= 0) {
+      // If quantity becomes 0 or less, remove the item.
+      // The toast for removal will be handled by the component calling removeFromCart.
+      setCartItems(prevItems => prevItems.filter(item => String(item.id) !== String(productId)));
     } else {
       setCartItems(prevItems =>
         prevItems.map(item =>
-          item.id === productId ? { ...item, quantity } : item
+          String(item.id) === String(productId) ? { ...item, quantity: numericQuantity } : item
         )
       );
     }
-  }, [removeFromCart]); // Added removeFromCart to dependencies
+  }, []); // Removed removeFromCart from deps as it's now handled internally based on quantity
 
   const clearCart = useCallback(() => {
     setCartItems([]);
-    // Toast notification handled where this is called (e.g., Cart.jsx)
+    // Toast for clearing cart is handled in Cart.jsx
   }, []);
 
   const getCartTotal = useCallback(() => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   }, [cartItems]);
 
   const getItemCount = useCallback(() => {

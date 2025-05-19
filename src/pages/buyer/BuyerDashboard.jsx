@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Sidebar from "../../components/Sidebar"; 
-import { useBuyerAuth } from "../../hooks/useBuyerAuth";
+import { useAuthContext } from "../../context/AuthContext";
 import ProductCard from "../../components/ProductCard"; 
 import {
   ShoppingCartIcon,
   ChatBubbleLeftEllipsisIcon,
   UserCircleIcon,
-  HeartIcon, // For future wishlist
-  ChartBarIcon, // Using ChartBarIcon for Dashboard overview
+  HeartIcon, 
+  ChartBarIcon, 
   ListBulletIcon 
 } from "@heroicons/react/24/outline";
 import allProductsData from "../../data/products.json"; // Assuming this is in src/data/
 
 export default function BuyerDashboard() {
-  const { buyerData, isLoading: isAuthLoading } = useBuyerAuth(); 
+  // Use AuthContext to get current user data and loading state
+  const { currentUser, isLoading: isAuthLoading, userRole } = useAuthContext(); 
+  
   const [recentOrders, setRecentOrders] = useState([]);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [messageCount, setMessageCount] = useState(0);
@@ -26,29 +28,31 @@ export default function BuyerDashboard() {
     { label: "My Orders", path: "/buyer/orders", icon: ListBulletIcon },
     { label: "Messages", path: "/buyer/messages", icon: ChatBubbleLeftEllipsisIcon },
     { label: "My Profile", path: "/buyer/profile", icon: UserCircleIcon },
-    { label: "My Favorites", path: "/buyer/favorites", icon: HeartIcon },
-    // { label: "Wishlist", path: "/buyer/wishlist", icon: HeartIcon }, // Future: for liked products
+    { label: "My Favorites", path: "/buyer/favorites", icon: HeartIcon }, 
   ];
 
   useEffect(() => {
-    if (buyerData) {
+    // Ensure currentUser is available and is a Buyer before processing buyer-specific data
+    if (currentUser && userRole === 'Buyer') {
       const allOrders = JSON.parse(localStorage.getItem("orders")) || [];
       const buyerOrders = allOrders
-        .filter((order) => String(order.buyerId) === String(buyerData.id))
+        .filter((order) => String(order.buyerId) === String(currentUser.id))
         .sort((a, b) => new Date(b.date) - new Date(a.date)); 
       setRecentOrders(buyerOrders.slice(0, 3)); 
       setTotalOrders(buyerOrders.length);
 
       const allMessages = JSON.parse(localStorage.getItem("messages")) || [];
-      const buyerSentMessages = allMessages.filter(msg => String(msg.senderId) === String(buyerData.id));
+      const buyerSentMessages = allMessages.filter(msg => String(msg.senderId) === String(currentUser.id));
+      // For a more complete count, you might also count messages where receiverId is currentUser.id
       setMessageCount(buyerSentMessages.length); 
     }
 
-    // Set recommended products (mock: random 4)
+    // Set recommended products (mock: random 4) - this can run regardless of login for now
     const shuffled = [...allProductsData].sort(() => 0.5 - Math.random());
     setRecommendedProducts(shuffled.slice(0, 4)); 
-  }, [buyerData]);
+  }, [currentUser, userRole]); // Depend on currentUser and userRole from AuthContext
 
+  // Show loading state while AuthContext is initializing
   if (isAuthLoading) {
      return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -57,23 +61,24 @@ export default function BuyerDashboard() {
     );
   }
 
-  if (!buyerData) {
-    // This case should ideally be handled by BuyerProtectedRoute redirecting.
+  // If not authenticated or not a buyer (though BuyerProtectedRoute should handle this)
+  if (!currentUser || userRole !== 'Buyer') {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <p>Buyer data not available. Please ensure you are logged in as a buyer.</p>
+        <p>Access denied or user data not available. Please ensure you are signed in as a Buyer.</p>
       </div>
     );
   }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar links={buyerLinks} userRole="Buyer" userName={buyerData.firstName} />
+      {/* Pass currentUser.firstName for userName */}
+      <Sidebar links={buyerLinks} userRole="Buyer" userName={currentUser.firstName} />
 
       <main className="flex-1 p-6 sm:p-8 space-y-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Hello, {buyerData.firstName}!
+            Hello, {currentUser.firstName}!
           </h1>
           <p className="text-sm text-gray-600 mt-1">
             Welcome to your personal dashboard. Manage your orders, messages, and more.
@@ -166,7 +171,7 @@ export default function BuyerDashboard() {
          {/* Placeholder for when there's no activity */}
          {recommendedProducts.length === 0 && recentOrders.length === 0 && (
             <div className="bg-white p-10 rounded-xl shadow-lg text-center mt-8">
-                <ShoppingCartIcon className="h-16 w-16 text-gray-300 mx-auto mb-4"/>
+                <ShoppingCartIcon className="mx-auto h-16 w-16 text-gray-300 mb-4"/>
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">Your Dashboard is Quiet</h3>
                 <p className="text-gray-500 mb-6">Start shopping or place an order to see activity here.</p>
                 <Link to="/products" className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">

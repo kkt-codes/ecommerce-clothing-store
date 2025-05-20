@@ -82,9 +82,19 @@
     "category": "Dress",
     "image": "/assets/clothes/dress/dress-4.jpg",
     "sellerId": "seller-001",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.0,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-d004-001",
+        "productId": "dress-004",
+        "userId": "buyer-004",
+        "userName": "Sarah K.",
+        "rating": 4,
+        "comment": "Lovely floral pattern and comfortable fit. Great for summer parties.",
+        "date": "2025-05-10T12:00:00Z"
+      }
+    ]
   },
   {
     "id": "dress-005",
@@ -171,9 +181,19 @@
     "category": "Jacket",
     "image": "/assets/clothes/jacket/jacket-3.jpg",
     "sellerId": "seller-003",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.5,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-j003-001",
+        "productId": "jacket-003",
+        "userId": "buyer-005",
+        "userName": "Mike B.",
+        "rating": 4.5,
+        "comment": "Stylish and lightweight, perfect for spring.",
+        "date": "2025-05-12T09:30:00Z"
+      }
+    ]
   },
   {
     "id": "jacket-004",
@@ -219,9 +239,19 @@
     "category": "Kids",
     "image": "/assets/clothes/kids/kids-1.jpg",
     "sellerId": "seller-001",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 5.0,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-k001-001",
+        "productId": "kids-001",
+        "userId": "buyer-006",
+        "userName": "Laura P.",
+        "rating": 5,
+        "comment": "My kid loves the bright colors! Good quality too.",
+        "date": "2025-05-11T15:00:00Z"
+      }
+    ]
   },
   {
     "id": "kids-002",
@@ -231,9 +261,19 @@
     "category": "Kids",
     "image": "/assets/clothes/kids/kids-2.jpg",
     "sellerId": "seller-002",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.0,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-k002-001",
+        "productId": "kids-002",
+        "userId": "buyer-007",
+        "userName": "David R.",
+        "rating": 4,
+        "comment": "Adorable and sturdy for playtime.",
+        "date": "2025-05-14T10:20:00Z"
+      }
+    ]
   },
   {
     "id": "kids-003",
@@ -243,9 +283,28 @@
     "category": "Kids",
     "image": "/assets/clothes/kids/kids-3.jpg",
     "sellerId": "seller-003",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.5,
+    "numberOfReviews": 2,
+    "reviews": [
+      {
+        "id": "review-k003-001",
+        "productId": "kids-003",
+        "userId": "buyer-008",
+        "userName": "Emily S.",
+        "rating": 5,
+        "comment": "Keeps my little one warm and cozy. Great purchase!",
+        "date": "2025-05-08T18:00:00Z"
+      },
+      {
+        "id": "review-k003-002",
+        "productId": "kids-003",
+        "userId": "buyer-009",
+        "userName": "Tom H.",
+        "rating": 4,
+        "comment": "Good quality jacket, nice design.",
+        "date": "2025-05-10T11:30:00Z"
+      }
+    ]
   },
   {
     "id": "kids-004",
@@ -291,9 +350,19 @@
     "category": "Shirt",
     "image": "/assets/clothes/shirt/shirt-1.jpg",
     "sellerId": "seller-001",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.0,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-s001-001",
+        "productId": "shirt-001",
+        "userId": "buyer-010",
+        "userName": "Kevin L.",
+        "rating": 4,
+        "comment": "Good quality cotton, fits well.",
+        "date": "2025-05-03T13:15:00Z"
+      }
+    ]
   },
   {
     "id": "shirt-002",
@@ -303,9 +372,19 @@
     "category": "Shirt",
     "image": "/assets/clothes/shirt/shirt-2.jpg",
     "sellerId": "seller-002",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.5,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-s002-001",
+        "productId": "shirt-002",
+        "userId": "buyer-002",
+        "userName": "Alex S.",
+        "rating": 4.5,
+        "comment": "Cozy and stylish. Love the plaid pattern.",
+        "date": "2025-04-28T17:00:00Z"
+      }
+    ]
   },
   {
     "id": "shirt-003",
@@ -315,9 +394,19 @@
     "category": "Shirt",
     "image": "/assets/clothes/shirt/shirt-3.jpg",
     "sellerId": "seller-003",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 5.0,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-s003-001",
+        "productId": "shirt-003",
+        "userId": "buyer-001",
+        "userName": "Jane D.",
+        "rating": 5,
+        "comment": "Perfect for summer, very breathable and light.",
+        "date": "2025-05-06T10:00:00Z"
+      }
+    ]
   },
   {
     "id": "shirt-004",
@@ -363,9 +452,19 @@
     "category": "T-shirt",
     "image": "/assets/clothes/t-shirt/t-shirt-1.png",
     "sellerId": "seller-001",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.2,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-ts001-001",
+        "productId": "tshirt-001",
+        "userId": "buyer-003",
+        "userName": "Chris P.",
+        "rating": 4.2,
+        "comment": "Cool design and comfortable material.",
+        "date": "2025-05-02T19:45:00Z"
+      }
+    ]
   },
   {
     "id": "tshirt-002",
@@ -375,9 +474,19 @@
     "category": "T-shirt",
     "image": "/assets/clothes/t-shirt/t-shirt-2.jpg",
     "sellerId": "seller-002",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 3.8,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-ts002-001",
+        "productId": "tshirt-002",
+        "userId": "buyer-004",
+        "userName": "Sarah K.",
+        "rating": 3.8,
+        "comment": "Decent basic tee, a bit thin.",
+        "date": "2025-04-29T14:00:00Z"
+      }
+    ]
   },
   {
     "id": "tshirt-003",
@@ -387,9 +496,19 @@
     "category": "T-shirt",
     "image": "/assets/clothes/t-shirt/t-shirt-3.jpg",
     "sellerId": "seller-003",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.8,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-ts003-001",
+        "productId": "tshirt-003",
+        "userId": "buyer-005",
+        "userName": "Mike B.",
+        "rating": 4.8,
+        "comment": "Awesome vintage vibe! Love it.",
+        "date": "2025-05-07T21:30:00Z"
+      }
+    ]
   },
   {
     "id": "tshirt-004",
@@ -435,9 +554,19 @@
     "category": "Trouser",
     "image": "/assets/clothes/trouser/trouser-1.jpg",
     "sellerId": "seller-001",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.0,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-tr001-001",
+        "productId": "trouser-001",
+        "userId": "buyer-001",
+        "userName": "Jane D.",
+        "rating": 4,
+        "comment": "Good fit for formal wear. Material is decent.",
+        "date": "2025-04-18T11:00:00Z"
+      }
+    ]
   },
   {
     "id": "trouser-002",
@@ -447,9 +576,19 @@
     "category": "Trouser",
     "image": "/assets/clothes/trouser/trouser-2.jpg",
     "sellerId": "seller-002",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.7,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-tr002-001",
+        "productId": "trouser-002",
+        "userId": "buyer-006",
+        "userName": "Laura P.",
+        "rating": 4.7,
+        "comment": "Super comfy joggers, great for lounging or a casual day out.",
+        "date": "2025-05-13T16:20:00Z"
+      }
+    ]
   },
   {
     "id": "trouser-003",
@@ -459,9 +598,19 @@
     "category": "Trouser",
     "image": "/assets/clothes/trouser/trouser-3.jpg",
     "sellerId": "seller-003",
-    "averageRating": 0,
-    "numberOfReviews": 0,
-    "reviews": []
+    "averageRating": 4.3,
+    "numberOfReviews": 1,
+    "reviews": [
+      {
+        "id": "review-tr003-001",
+        "productId": "trouser-003",
+        "userId": "buyer-007",
+        "userName": "David R.",
+        "rating": 4.3,
+        "comment": "Nice slim fit and good quality material. Versatile.",
+        "date": "2025-05-09T09:00:00Z"
+      }
+    ]
   },
   {
     "id": "trouser-004",

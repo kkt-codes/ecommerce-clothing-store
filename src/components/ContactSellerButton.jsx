@@ -1,46 +1,52 @@
-// src/components/ContactSellerButton.jsx
-import { useBuyerAuth } from "../hooks/useBuyerAuth";
+import React from 'react'; // Added React import
+import { useAuthContext } from "../context/AuthContext"; 
 import { useNavigate } from "react-router-dom";
-import { useSignupSigninModal } from "../hooks/useSignupSigninModal.jsx"; 
+import { useSignupSigninModal } from "../hooks/useSignupSigninModal.jsx";
 import toast from 'react-hot-toast';
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'; // Using a more relevant icon
 
-export default function ContactSellerButton({ sellerId, productName }) { // Added productName for better toast message
-  const { isAuthenticated, buyerData } = useBuyerAuth();
+export default function ContactSellerButton({ sellerId, sellerName, productName, productId }) {
+  const { isAuthenticated, currentUser, userRole } = useAuthContext(); 
   const navigate = useNavigate();
-  const { openModal, switchToTab } = useSignupSigninModal(); // Assuming you might want to open modal
+  const { openModal, switchToTab } = useSignupSigninModal();
 
   const handleContact = () => {
-    if (!isAuthenticated) {
-      toast.error("Please login as a Buyer to contact sellers!"); // Replaced alert
-      // Optionally, open the login modal
-      // switchToTab("signin");
-      // openModal();
+    // Check if user is authenticated and is a Buyer
+    if (!isAuthenticated || userRole !== 'Buyer') {
+      toast.error("Please sign in as a Buyer to contact sellers!");
+      //Optionally open the modal for signin/signup
+      //switchToTab("signin"); // Directly open signin tab
+      //openModal();
       return;
     }
 
-    const messages = JSON.parse(localStorage.getItem("messages")) || [];
-    const newMessage = {
-      id: `message-${Date.now()}`,
-      senderId: buyerData.id,
-      senderName: `${buyerData.firstName} ${buyerData.lastName}`,
-      receiverId: sellerId,
-      // Improved message content
-      content: `Hello, I'm interested in your product: ${productName || 'the listed item'}. Is it still available?`,
-      date: new Date().toLocaleString()
-    };
+    // Ensure currentUser is available
+    if (!currentUser) {
+      toast.error("Buyer data not found. Please try logging in again.");
+      return;
+    }
 
-    messages.push(newMessage);
-    localStorage.setItem("messages", JSON.stringify(messages));
-
-    toast.success("Message sent to seller!"); // Replaced alert
-    navigate("/buyer/messages"); // Or stay on page, or give option
+    // Navigate to the buyer's messages page, passing sellerId and product info in state
+    // This will allow BuyerMessages.jsx to open or create the correct conversation
+    console.log(`ContactSellerButton: Navigating to messages for sellerId: ${sellerId}, productName: ${productName}`);
+    navigate("/buyer/messages", { 
+      state: { 
+        openWithSellerId: sellerId,
+        sellerName: sellerName, // Pass sellerName for immediate display if needed
+        productContext: { // Pass product context for pre-filling message
+            id: productId,
+            name: productName,
+        }
+      } 
+    });
   };
 
   return (
     <button
       onClick={handleContact}
-      className="w-full px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors duration-300 font-semibold"
+      className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 font-semibold flex items-center justify-center gap-2 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
     >
+      <ChatBubbleLeftRightIcon className="h-5 w-5" />
       Contact Seller
     </button>
   );

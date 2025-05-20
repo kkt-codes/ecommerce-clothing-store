@@ -1,66 +1,97 @@
-// Cached data fetch
+// src/hooks/useFetchCached.js
 import { useState, useEffect, useCallback } from 'react';
 
 /**
- * Custom hook to fetch data and cache it in sessionStorage.
- * @param {string} cacheKey - A unique key for this data in sessionStorage (e.g., the URL or a descriptive name like 'allProducts').
- * @param {string} url - The URL to fetch data from (e.g., '/data/products.json').
- * @param {object} [options={}] - Optional settings.
- * @param {number} [options.cacheDuration=300000] - Duration in milliseconds to keep cache valid (default: 5 minutes).
- * @returns {{ data: any, loading: boolean, error: Error|null, forceRefetch: function }}
+ * Custom hook to fetch data and cache it.
+ * Prioritizes sessionStorage for timed caching.
+ * Optionally uses localStorage as a more persistent "source of truth" after initial fetch from URL.
  */
 export function useFetchCached(cacheKey, url, options = {}) {
-  const { cacheDuration = 5 * 60 * 1000 } = options; // Default 5 minutes
+  const { cacheDuration = 5 * 60 * 1000, useLocalStoragePersistence = false } = options;
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refetchIndex, setRefetchIndex] = useState(0); // To trigger refetch
+  const [refetchIndex, setRefetchIndex] = useState(0);
 
   const forceRefetch = useCallback(() => {
-    // Clear cache for this key and then trigger a refetch by updating refetchIndex
+    console.log(`useFetchCached: Forcing refetch for "${cacheKey}". Clearing sessionStorage.`);
     try {
       sessionStorage.removeItem(cacheKey);
+      // To truly force a re-fetch from the original URL and re-seed localStorage,
+      // localStorage.removeItem(cacheKey); // would need to be called *before* this.
+      // For now, forceRefetch clears session cache, leading to re-check of localStorage then URL.
     } catch (e) {
       console.warn(`useFetchCached: Could not remove item from sessionStorage for key "${cacheKey}"`, e);
     }
-    setRefetchIndex(prevIndex => prevIndex + 1);
+    setRefetchIndex(prevIndex => prevIndex + 1); // Trigger the useEffect
   }, [cacheKey]);
 
 
   useEffect(() => {
-    let isMounted = true; // To prevent state updates on unmounted component
+    let isMounted = true;
     setLoading(true);
     setError(null);
+    setData(null); 
 
     const fetchData = async () => {
-      // 1. Try to get data from sessionStorage
-      try {
-        const cachedItemString = sessionStorage.getItem(cacheKey);
-        if (cachedItemString) {
-          const cachedItem = JSON.parse(cachedItemString);
-          const currentTime = new Date().getTime();
+      console.log(`useFetchCached: Attempting to get data for "${cacheKey}". Persistence: ${useLocalStoragePersistence}`);
 
-          if (cachedItem.timestamp && (currentTime - cachedItem.timestamp < cacheDuration)) {
-            // Cache is valid
+      // 1. Try sessionStorage (timed cache)
+      try {
+        const sessionCachedItemString = sessionStorage.getItem(cacheKey);
+        if (sessionCachedItemString) {
+          const sessionCachedItem = JSON.parse(sessionCachedItemString);
+          const currentTime = new Date().getTime();
+          if (sessionCachedItem.timestamp && (currentTime - sessionCachedItem.timestamp < cacheDuration)) {
             if (isMounted) {
-              setData(cachedItem.data);
+              setData(sessionCachedItem.data);
               setLoading(false);
             }
-            console.log(`useFetchCached: Serving data for "${cacheKey}" from cache.`);
-            return; // Exit if serving from cache
+            console.log(`useFetchCached: Serving data for "${cacheKey}" from valid sessionStorage.`);
+            return; 
           } else {
-            // Cache expired or no timestamp
-            console.log(`useFetchCached: Cache for "${cacheKey}" expired or invalid.`);
+            console.log(`useFetchCached: SessionStorage for "${cacheKey}" expired or invalid.`);
             sessionStorage.removeItem(cacheKey);
           }
         }
       } catch (e) {
-        console.warn(`useFetchCached: Could not retrieve or parse item from sessionStorage for key "${cacheKey}"`, e);
-        // Proceed to fetch if cache is problematic
+        console.warn(`useFetchCached: Error with sessionStorage for "${cacheKey}"`, e);
+        sessionStorage.removeItem(cacheKey); 
       }
 
-      // 2. If no valid cache, fetch data
+      // 2. If useLocalStoragePersistence is true, try localStorage
+      if (useLocalStoragePersistence) {
+        try {
+          const localCachedItemString = localStorage.getItem(cacheKey); 
+          if (localCachedItemString) { 
+            const localCachedData = JSON.parse(localCachedItemString);
+            // Ensure it's a non-empty array if we expect an array (like for "products")
+            if (Array.isArray(localCachedData) && localCachedData.length > 0) {
+                if (isMounted) {
+                  setData(localCachedData);
+                  try { // Refresh sessionStorage with this data from localStorage
+                    sessionStorage.setItem(cacheKey, JSON.stringify({ data: localCachedData, timestamp: new Date().getTime() }));
+                  } catch (se) {/* ignore session storage error */}
+                  setLoading(false);
+                }
+                console.log(`useFetchCached: Serving data for "${cacheKey}" from localStorage (non-empty array).`);
+                return; 
+            } else if (!Array.isArray(localCachedData) || localCachedData.length === 0) {
+                console.log(`useFetchCached: localStorage for "${cacheKey}" is empty/invalid. Will fetch from URL to re-seed.`);
+                // Do not return; proceed to fetch from URL to re-seed localStorage.
+            }
+          } else {
+            console.log(`useFetchCached: No data for "${cacheKey}" in localStorage. Will fetch from URL to seed it.`);
+          }
+        } catch (e) {
+          console.warn(`useFetchCached: Error reading from localStorage for "${cacheKey}". Will fetch from URL.`, e);
+          // Potentially clear corrupted localStorage entry before fetching to ensure clean seed
+          // localStorage.removeItem(cacheKey); 
+        }
+      }
+
+      // 3. If no valid cache (session or local was empty/invalid), fetch from URL
       console.log(`useFetchCached: Fetching data for "${cacheKey}" from URL: ${url}`);
       try {
         const response = await fetch(url);
@@ -71,16 +102,22 @@ export function useFetchCached(cacheKey, url, options = {}) {
 
         if (isMounted) {
           setData(fetchedData);
-          // Store in sessionStorage with a timestamp
-          try {
-            const itemToCache = {
-              data: fetchedData,
-              timestamp: new Date().getTime(),
-            };
-            sessionStorage.setItem(cacheKey, JSON.stringify(itemToCache));
-            console.log(`useFetchCached: Data for "${cacheKey}" cached.`);
-          } catch (e) {
-            console.warn(`useFetchCached: Could not set item in sessionStorage for key "${cacheKey}"`, e);
+          try { // Store in sessionStorage (timed cache)
+            sessionStorage.setItem(cacheKey, JSON.stringify({ data: fetchedData, timestamp: new Date().getTime() }));
+            console.log(`useFetchCached: Data for "${cacheKey}" cached in sessionStorage.`);
+          } catch (se) {
+             console.warn(`useFetchCached: Could not set item in sessionStorage for key "${cacheKey}"`, se);
+          }
+
+          // If using localStorage persistence, store/overwrite it with the fresh data from the URL.
+          // This acts as the initial seed or a reset if localStorage was found empty/invalid in step 2.
+          if (useLocalStoragePersistence) {
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify(fetchedData)); 
+                console.log(`useFetchCached: Data for "${cacheKey}" (re-)seeded into localStorage from URL.`);
+            } catch (le) {
+                console.warn(`useFetchCached: Could not set item in localStorage for key "${cacheKey}" after fetching from URL.`, le);
+            }
           }
         }
       } catch (err) {
@@ -98,21 +135,17 @@ export function useFetchCached(cacheKey, url, options = {}) {
     fetchData();
 
     return () => {
-      isMounted = false; // Cleanup function to set isMounted to false when component unmounts
+      isMounted = false; 
     };
-  }, [url, cacheKey, cacheDuration, refetchIndex]); // Re-run effect if url, cacheKey, cacheDuration, or refetchIndex changes
+  }, [url, cacheKey, cacheDuration, useLocalStoragePersistence, refetchIndex]); 
 
   return { data, loading, error, forceRefetch };
 }
 
-/**
- * Utility function to manually invalidate/clear a specific cache entry.
- * @param {string} cacheKey - The key of the cache entry to clear.
- */
 export const invalidateCacheEntry = (cacheKey) => {
     try {
       sessionStorage.removeItem(cacheKey);
-      console.log(`useFetchCached: Manually invalidated cache for key "${cacheKey}".`);
+      console.log(`useFetchCached: Manually invalidated sessionStorage cache for key "${cacheKey}".`);
     } catch (e) {
       console.warn(`useFetchCached: Could not remove item from sessionStorage for key "${cacheKey}" during manual invalidation`, e);
     }

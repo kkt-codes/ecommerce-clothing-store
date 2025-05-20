@@ -8,120 +8,113 @@
 
 // src/pages/ProductList.jsx
 import React, { useEffect, useState, useMemo } from "react";
-import { useLocation } from "react-router-dom"; // To read query params like ?search=
+import { useLocation }
+from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import ProductFilter from "../components/ProductFilter";
-import { useFetchCached } from "../hooks/useFetchCached"; // Custom hook to fetch and cache data
-import { StarIcon as EmptyProductStateIcon } from "@heroicons/react/24/outline"; // For empty state icon
+import { useFetchCached } from "../hooks/useFetchCached";
+import { InboxIcon as EmptyProductStateIcon } from "@heroicons/react/24/outline"; // Changed icon for variety
+
+const PRODUCTS_PER_PAGE = 16; // 4 columns * 4 rows
 
 export default function ProductList() {
-  const location = useLocation(); // For reading search query from URL
+  const location = useLocation();
 
-  // Use the useFetchCached hook to get products
-  const { 
-    data: allProductsData, // Renamed from 'data' to 'allProductsData' for clarity
-    loading: productsLoading, 
+  const {
+    data: allProductsData,
+    loading: productsLoading,
     error: productsError,
-    forceRefetch: refetchProducts // If you need a manual refetch button later
-  } = useFetchCached("allProducts", "/data/products.json"); // Cache key and URL
+    forceRefetch: refetchProducts
+  } = useFetchCached("products", "/data/products.json", { useLocalStoragePersistence: true });
 
-  const [products, setProducts] = useState([]);             // All products from data source (will be set by the hook)
-  const [filteredProducts, setFilteredProducts] = useState([]); // Products to display after filtering/sorting
+  // Local state for products (raw from fetch)
+  const [products, setProducts] = useState([]);
   
-  // State for filters
+  // Filter states from your original component
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' }); // Initialize with empty strings
-  const [sortOption, setSortOption] = useState("default"); // e.g., 'default', 'price-asc', 'price-desc'
-  const [ratingFilter, setRatingFilter] = useState(0); // New: 0 means all ratings
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [sortOption, setSortOption] = useState("default");
+  const [ratingFilter, setRatingFilter] = useState(0); // 0 for All, 1-4 for stars, 'NO_RATING' for unrated
 
-  // Update local 'products' state when data from the hook changes
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     if (allProductsData) {
       setProducts(allProductsData);
     }
   }, [allProductsData]);
 
-
-  // Memoize categories to prevent re-computation on every render
   const categories = useMemo(() => {
     if (!products || products.length === 0) return [];
-    // Get unique categories from the products array
     const uniqueCategories = [...new Set(products.map((product) => product.category))];
-    return uniqueCategories.sort(); // Sort categories alphabetically
-  }, [products]); // Depends on the 'products' state
+    return uniqueCategories.sort();
+  }, [products]);
 
-  // Memoize min/max possible prices from the full dataset for filter placeholders
   const { minPossiblePrice, maxPossiblePrice } = useMemo(() => {
-    // Use allProductsData here if you want the true min/max of the entire dataset
-    // If you use 'products' state, it might change if 'products' is pre-filtered elsewhere (not in this component)
-    const sourceDataForPriceRange = allProductsData || []; 
+    const sourceDataForPriceRange = allProductsData || [];
     if (!sourceDataForPriceRange || sourceDataForPriceRange.length === 0) {
-      return { minPossiblePrice: 0, maxPossiblePrice: 1000 }; // Default if no products
+      return { minPossiblePrice: 0, maxPossiblePrice: 1000 };
     }
-    const prices = sourceDataForPriceRange.map(p => p.price);
+    const prices = sourceDataForPriceRange.map(p => p.price).filter(p => typeof p === 'number');
+    if (prices.length === 0) return { minPossiblePrice: 0, maxPossiblePrice: 1000 };
     return {
       minPossiblePrice: Math.floor(Math.min(...prices)),
       maxPossiblePrice: Math.ceil(Math.max(...prices)),
     };
-  }, [allProductsData]); // Depends on the initial full dataset from cache/fetch
+  }, [allProductsData]);
 
-  // Effect to handle search term and category from URL query parameter
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const searchFromQuery = queryParams.get('search');
     if (searchFromQuery) {
       setSearchTerm(searchFromQuery);
     }
-    // Only set category from query if categories are loaded to avoid issues
     const categoryFromQuery = queryParams.get('category');
-    if (categoryFromQuery && categories.length > 0) { // Check if categories array is populated
-        if (categories.includes(categoryFromQuery) || categoryFromQuery === "All") {
-            setSelectedCategory(categoryFromQuery);
-        }
+    if (categoryFromQuery && categories.length > 0) {
+      if (categories.includes(categoryFromQuery) || categoryFromQuery === "All") {
+        setSelectedCategory(categoryFromQuery);
+      }
     }
-  }, [location.search, categories]); // Rerun if location.search or categories array changes
+    setCurrentPage(1); // Reset page on query param change
+  }, [location.search, categories]);
 
-  // Main effect for filtering and sorting products
-  useEffect(() => {
+  const filteredAndSortedProducts = useMemo(() => {
     if (!products || products.length === 0) {
-        setFilteredProducts([]); // Ensure filteredProducts is empty if no base products
-        return;
+      return [];
     }
+    let tempProducts = [...products];
 
-    let tempProducts = [...products]; // Start with all products
-
-    // 1. Filter by Category
     if (selectedCategory !== "All") {
       tempProducts = tempProducts.filter(
         (product) => product.category === selectedCategory
       );
     }
 
-    // 2. Filter by Search Term (product name)
     if (searchTerm.trim() !== "") {
       tempProducts = tempProducts.filter((product) =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+    
+    const minPrice = priceRange.min !== '' ? parseFloat(priceRange.min) : -Infinity;
+    const maxPrice = priceRange.max !== '' ? parseFloat(priceRange.max) : Infinity;
 
-    // 3. Filter by Price Range
-    const minPrice = parseFloat(priceRange.min);
-    const maxPrice = parseFloat(priceRange.max);
-
-    if (!isNaN(minPrice) && String(priceRange.min).trim() !== '') { // Check if not empty string
-        tempProducts = tempProducts.filter(product => product.price >= minPrice);
+    if (!isNaN(minPrice)) {
+      tempProducts = tempProducts.filter(product => product.price >= minPrice);
     }
-    if (!isNaN(maxPrice) && String(priceRange.max).trim() !== '') { // Check if not empty string
-        tempProducts = tempProducts.filter(product => product.price <= maxPrice);
+    if (!isNaN(maxPrice)) {
+      tempProducts = tempProducts.filter(product => product.price <= maxPrice);
     }
-
-    // 4. Filter by Rating
-    if (ratingFilter > 0) {
+    
+    if (ratingFilter === 'NO_RATING') {
+      tempProducts = tempProducts.filter(product => (product.averageRating === 0 || !product.reviews || product.reviews.length === 0 || product.numberOfReviews === 0));
+    } else if (ratingFilter > 0) {
       tempProducts = tempProducts.filter(product => (product.averageRating || 0) >= ratingFilter);
     }
 
-    // 5. Sort Products
+    // Sorting (from your original logic)
     switch (sortOption) {
       case 'price-asc':
         tempProducts.sort((a, b) => a.price - b.price);
@@ -138,25 +131,60 @@ export default function ProductList() {
       case 'rating-desc':
         tempProducts.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
         break;
-      case 'rating-asc':
-        tempProducts.sort((a, b) => (a.averageRating || 0) - (b.averageRating || 0));
-        break;
-      default: // 'default' or any other case
-        // Optionally, sort by ID to maintain a stable "default" order if products array isn't already sorted
-        tempProducts.sort((a, b) => String(a.id).localeCompare(String(b.id))); 
+      default:
+        // Default sort by ID to maintain a stable order if products array isn't already sorted
+        tempProducts.sort((a, b) => String(a.id).localeCompare(String(b.id)));
         break;
     }
-
-    setFilteredProducts(tempProducts);
+    return tempProducts;
   }, [products, selectedCategory, searchTerm, priceRange, sortOption, ratingFilter]);
 
+  // Pagination logic
+  const indexOfLastProduct = currentPage * PRODUCTS_PER_PAGE;
+  const indexOfFirstProduct = indexOfLastProduct - PRODUCTS_PER_PAGE;
+  const currentProducts = filteredAndSortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / PRODUCTS_PER_PAGE);
 
-  // UI for loading and error states from the useFetchCached hook
+  const paginate = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      // Scroll to top of product list container or window
+      const productListTop = document.getElementById('product-list-section');
+      if (productListTop) {
+         // Calculate offset if there's a sticky header
+        const headerOffset = document.querySelector('header')?.offsetHeight || 0; // Adjust selector for your header
+        const elementPosition = productListTop.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - headerOffset - 20; // 20px for some margin
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
+      } else {
+        window.scrollTo(0,0); // Fallback
+      }
+    }
+  };
+  
+  // Reset all filters (passed to ProductFilter)
+  const handleResetAllFilters = () => {
+    setSelectedCategory("All");
+    setSearchTerm("");
+    setPriceRange({ min: '', max: '' });
+    setSortOption("default");
+    setRatingFilter(0);
+    setCurrentPage(1);
+  };
+  
+  // Effect to reset page to 1 if filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchTerm, priceRange, sortOption, ratingFilter]);
+
+
   if (productsLoading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-10rem)] bg-gray-50">
         <p className="text-gray-600 text-xl animate-pulse">Loading products...</p>
-        {/* You can add a spinner component here */}
       </div>
     );
   }
@@ -167,8 +195,8 @@ export default function ProductList() {
         <h2 className="text-2xl font-semibold text-red-600 mb-3">Oops! Something went wrong.</h2>
         <p className="text-gray-700 mb-2">We couldn't load the products at this time.</p>
         <p className="text-sm text-gray-500 mb-6">Error: {productsError.message}</p>
-        <button 
-          onClick={refetchProducts} // Allows user to try fetching again
+        <button
+          onClick={refetchProducts}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           Try Again
@@ -176,18 +204,21 @@ export default function ProductList() {
       </div>
     );
   }
+  
+  // Estimate header height for sticky filter positioning
+  const headerHeight = "4rem"; // Adjust this to your actual Navbar height
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
+        {/* Page Title from your original file */}
         <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">Our Products</h1>
-            <p className="mt-3 text-lg text-gray-600">Browse our extensive collection of high-quality clothing.</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">Our Products</h1>
+          <p className="mt-3 text-lg text-gray-600">Browse our extensive collection of high-quality clothing.</p>
         </div>
 
-        {/* Search Bar - Centralized */}
-        <div className="mb-8 max-w-2xl mx-auto">
+        {/* Search Bar - Centered and smaller */}
+        <div className="mb-8 max-w-lg mx-auto">
           <input
             type="text"
             placeholder="Search by product name..."
@@ -196,38 +227,123 @@ export default function ProductList() {
             className="w-full border border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
           />
         </div>
+        
+        {/* This ID is for scrolling to the top of this section on pagination */}
+        <div id="product-list-section" className="flex flex-col md:flex-row md:gap-8 relative">
+          {/* Filters - Left Side (Sticky on md+ screens) */}
+          <aside 
+            className="w-full md:w-1/3 lg:w-1/4 xl:w-1/5 md:sticky self-start mb-8 md:mb-0"
+            style={{ top: `calc(${headerHeight} + 1rem)` }} // Adjust 1rem for desired spacing below header
+          >
+            <ProductFilter
+              categories={categories}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              sortOption={sortOption}
+              setSortOption={setSortOption}
+              minPossiblePrice={minPossiblePrice}
+              maxPossiblePrice={maxPossiblePrice}
+              ratingFilter={ratingFilter}
+              setRatingFilter={setRatingFilter}
+              onResetFilters={handleResetAllFilters}
+            />
+          </aside>
 
-        {/* Filters & Sorting Component */}
-        <ProductFilter
-          categories={categories} // Pass unique categories (ProductFilter handles "All" button)
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          priceRange={priceRange}
-          setPriceRange={setPriceRange}
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-          minPossiblePrice={minPossiblePrice}
-          maxPossiblePrice={maxPossiblePrice}
-          ratingFilter={ratingFilter}     // Pass rating filter state
-          setRatingFilter={setRatingFilter} // Pass setter for rating filter
-        />
-
-        {/* Product Grid */}
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 xl:gap-8 mt-8">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          // Displayed when filters result in no products
-          <div className="col-span-full text-center text-gray-500 py-10 mt-8 bg-white rounded-lg shadow-md">
-            <EmptyProductStateIcon className="mx-auto h-16 w-16 text-gray-300 mb-4" /> {/* Using a different icon */}
-            <h3 className="text-xl font-semibold mb-2">No Products Match Your Filters</h3>
-            <p>Try adjusting your search, category, price, or rating filters, or check back later!</p>
-          </div>
-        )}
+          {/* Products - Right Side */}
+          <main 
+            id="product-grid-container" // Keep ID if used for other purposes, but not for scrolling container
+            className="w-full md:w-2/3 lg:w-3/4 xl:w-4/5"
+            >
+            {currentProducts.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {currentProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <nav className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-10 mb-4 py-4 border-t border-gray-200" aria-label="Pagination">
+                    <p className="text-sm text-gray-700">
+                      Showing <span className="font-medium">{indexOfFirstProduct + 1}</span>
+                      {' '}to <span className="font-medium">{Math.min(indexOfLastProduct, filteredAndSortedProducts.length)}</span>
+                      {' '}of <span className="font-medium">{filteredAndSortedProducts.length}</span> results
+                    </p>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => paginate(1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        First
+                      </button>
+                      <button
+                        onClick={() => paginate(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Prev
+                      </button>
+                      {/* Page numbers */}
+                      {[...Array(totalPages).keys()].map(num => {
+                          const pageNum = num + 1;
+                          if (
+                            pageNum === 1 ||
+                            pageNum === totalPages ||
+                            (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                          ) {
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => paginate(pageNum)}
+                                className={`px-3 py-1.5 text-sm font-medium border rounded-md ${
+                                  currentPage === pageNum
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'text-gray-600 bg-white border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          } if (
+                            (pageNum === currentPage - 2 && currentPage > 3) ||
+                            (pageNum === currentPage + 2 && currentPage < totalPages - 2)
+                          ) {
+                            return <span key={pageNum} className="px-3 py-1.5 text-sm">...</span>;
+                          }
+                          return null;
+                        })}
+                      <button
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                      <button
+                        onClick={() => paginate(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Last
+                      </button>
+                    </div>
+                  </nav>
+                )}
+              </>
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-16 bg-white rounded-lg shadow-md">
+                <EmptyProductStateIcon className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold mb-2 text-gray-700">No Products Match Your Filters</h3>
+                <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     </div>
   );
 }
+

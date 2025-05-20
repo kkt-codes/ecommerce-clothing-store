@@ -1,219 +1,313 @@
-// src/pages/buyer/BuyerMessages.jsx
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import Sidebar from "../../components/Sidebar";
-import { useBuyerAuth } from "../../hooks/useBuyerAuth";
+import { useAuthContext } from "../../context/AuthContext";
 import toast from 'react-hot-toast';
-import { PaperAirplaneIcon, InboxArrowDownIcon, UserCircleIcon, ListBulletIcon, ChartBarIcon, ChatBubbleLeftEllipsisIcon, HeartIcon } from "@heroicons/react/24/outline";
-import sellersData from "../../data/sellers.json"; // To get seller names if not in message
+import {
+  ChatBubbleLeftEllipsisIcon, PaperAirplaneIcon, ArrowLeftIcon,
+  UserCircleIcon, ListBulletIcon, ChartBarIcon, HeartIcon, InboxIcon
+} from "@heroicons/react/24/outline";
+import { getConversationsForUser, getConversationById, sendMockMessage, getMockUserById, findOrCreateConversation } from "../../data/mockMessages"; // Added findOrCreateConversation
+import { formatDistanceToNowStrict, parseISO } from 'date-fns';
+import { useLocation, useNavigate } from 'react-router-dom'; // Added useLocation and useNavigate
+
+// Buyer Sidebar Links
+const buyerLinks = [
+  { label: "Dashboard", path: "/buyer/dashboard", icon: ChartBarIcon },
+  { label: "My Orders", path: "/buyer/orders", icon: ListBulletIcon },
+  { label: "Messages", path: "/buyer/messages", icon: ChatBubbleLeftEllipsisIcon },
+  { label: "My Profile", path: "/buyer/profile", icon: UserCircleIcon },
+  { label: "My Favorites", path: "/buyer/favorites", icon: HeartIcon },
+];
+
+// Component for an individual conversation in the list
+const ConversationListItem = ({ conversation, onSelectConversation, isActive }) => {
+  const { otherParticipant, lastMessageText, lastMessageTimestamp, isUnread, unreadMessagesCount } = conversation;
+
+  return (
+    <button
+      onClick={() => onSelectConversation(conversation.id)}
+      className={`w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors duration-150 flex items-start space-x-3
+        ${isActive ? 'bg-blue-50 shadow-sm' : ''}
+        ${isUnread ? 'font-semibold text-gray-800' : 'text-gray-600'}`}
+    >
+      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-500 text-sm">
+        {otherParticipant.avatarFallback || otherParticipant.name?.charAt(0).toUpperCase() || '?'}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-center">
+          <p className={`truncate text-sm ${isUnread ? 'text-blue-600' : 'text-gray-800'}`}>
+            {otherParticipant.name}
+          </p>
+          <p className={`text-xs whitespace-nowrap ${isUnread ? 'text-blue-500' : 'text-gray-400'}`}>
+            {lastMessageTimestamp ? formatDistanceToNowStrict(parseISO(lastMessageTimestamp), { addSuffix: true }) : ''}
+          </p>
+        </div>
+        <div className="flex justify-between items-center mt-1">
+          <p className={`truncate text-xs ${isUnread ? 'text-gray-700' : 'text-gray-500'}`}>
+            {lastMessageText}
+          </p>
+          {isUnread && unreadMessagesCount > 0 && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full">
+              {unreadMessagesCount}
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+};
+
+// Component for displaying a single chat message
+const ChatMessageBubble = ({ message, currentUserId, senderDetails }) => {
+  const isCurrentUserSender = message.senderId === currentUserId;
+  const senderName = senderDetails?.name || 'Unknown';
+
+  return (
+    <div className={`flex mb-3 ${isCurrentUserSender ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-[70%] p-3 rounded-xl shadow-sm ${
+        isCurrentUserSender 
+          ? 'bg-blue-500 text-white rounded-br-none' 
+          : 'bg-gray-200 text-gray-800 rounded-bl-none'
+      }`}>
+        {!isCurrentUserSender && (
+          <p className="text-xs font-semibold mb-0.5 text-gray-600">{senderName}</p>
+        )}
+        <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
+        <p className={`text-xs mt-1.5 opacity-80 text-right ${isCurrentUserSender ? 'text-blue-100' : 'text-gray-500'}`}>
+          {message.timestamp ? formatDistanceToNowStrict(parseISO(message.timestamp), { addSuffix: true }) : 'sending...'}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 
 export default function BuyerMessages() {
-  const { buyerData, isLoading: isAuthLoading } = useBuyerAuth();
-  const [conversations, setConversations] = useState({}); // Object where keys are seller IDs
-  const [replyContent, setReplyContent] = useState({}); // { sellerId: "reply text" }
+  const { currentUser, isAuthenticated, userRole, isLoading: isAuthLoading } = useAuthContext();
+  const location = useLocation(); // Get location object
+  const navigate = useNavigate(); // For clearing state after use
+
+  const [conversations, setConversations] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [newMessage, setNewMessage] = useState("");
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+  const [isSending, setIsSending] = useState(false);
 
-  // Buyer Sidebar Links - Copied from BuyerDashboard for consistency
-  const buyerLinks = [
-    { label: "Dashboard", path: "/buyer/dashboard", icon: ChartBarIcon },
-    { label: "My Orders", path: "/buyer/orders", icon: ListBulletIcon },
-    { label: "Messages", path: "/buyer/messages", icon: ChatBubbleLeftEllipsisIcon },
-    { label: "My Profile", path: "/buyer/profile", icon: UserCircleIcon },
-    { label: "My Favorites", path: "/buyer/favorites", icon: HeartIcon },
-  ];
+  const currentUserDetails = useMemo(() => {
+      if (currentUser) return getMockUserById(currentUser.id);
+      return null;
+  }, [currentUser]);
 
-  const getSellerNameById = (sellerId) => {
-    const seller = sellersData.find(s => String(s.id) === String(sellerId));
-    return seller ? `${seller.firstName} ${seller.lastName}` : `Seller ${sellerId.substring(0,6)}`;
-  };
-
-  const loadAndProcessMessages = useCallback(() => {
-    if (!buyerData) return;
-    setIsLoadingMessages(true);
-    try {
-      const allMessagesString = localStorage.getItem("messages");
-      const allMessages = allMessagesString ? JSON.parse(allMessagesString) : [];
-      
-      const relatedMessages = allMessages.filter(
-        (msg) => String(msg.receiverId) === String(buyerData.id) || String(msg.senderId) === String(buyerData.id)
-      );
-
-      const groupedConversations = relatedMessages.reduce((acc, msg) => {
-        const otherPartyId = String(msg.senderId) === String(buyerData.id) ? msg.receiverId : msg.senderId;
-        // Determine the name of the other party (seller)
-        let otherPartyName = "";
-        if (String(msg.senderId) === String(buyerData.id)) { // Buyer sent this message
-            otherPartyName = msg.receiverName || getSellerNameById(msg.receiverId);
-        } else { // Buyer received this message
-            otherPartyName = msg.senderName || getSellerNameById(msg.senderId);
-        }
-
-
-        if (!acc[otherPartyId]) {
-          acc[otherPartyId] = {
-            sellerId: otherPartyId,
-            sellerName: otherPartyName || `Seller ${otherPartyId.substring(0,6)}`,
-            messages: []
-          };
-        }
-        acc[otherPartyId].messages.push(msg);
-        return acc;
-      }, {});
-
-      for (const sellerId in groupedConversations) {
-        groupedConversations[sellerId].messages.sort((a, b) => new Date(a.date) - new Date(b.date));
-      }
-      setConversations(groupedConversations);
-    } catch (error) {
-      console.error("Error loading or processing messages:", error);
-      toast.error("Could not load messages.");
-      setConversations({});
-    }
-    setIsLoadingMessages(false);
-  }, [buyerData]);
-
-  useEffect(() => {
-    if (!isAuthLoading && buyerData) {
-      loadAndProcessMessages();
-    }
-  }, [isAuthLoading, buyerData, loadAndProcessMessages]);
-
-  const handleReplyChange = (sellerId, text) => {
-    setReplyContent(prev => ({ ...prev, [sellerId]: text }));
-  };
-
-  const handleSendReply = (sellerId, sellerName) => {
-    if (!buyerData || !replyContent[sellerId]?.trim()) {
-      toast.error("Reply cannot be empty.");
+  const loadConversations = useCallback((callback) => {
+    if (!currentUser || userRole !== 'Buyer') {
+      setConversations([]);
+      setIsLoadingMessages(false);
+      if (callback) callback();
       return;
     }
+    setIsLoadingMessages(true);
+    setTimeout(() => {
+      const userConversations = getConversationsForUser(currentUser.id);
+      setConversations(userConversations);
+      setIsLoadingMessages(false);
+      if (callback) callback();
+    }, 500);
+  }, [currentUser, userRole]);
 
-    const newReply = {
-      id: `message-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-      senderId: buyerData.id,
-      senderName: `${buyerData.firstName} ${buyerData.lastName}`,
-      receiverId: sellerId,
-      receiverName: sellerName, // Seller's name
-      content: replyContent[sellerId].trim(),
-      date: new Date().toISOString(),
-    };
+  // Effect to handle initial conversation opening from navigation state
+  useEffect(() => {
+    if (isAuthLoading || !currentUser) return; // Wait for auth and user
 
-    try {
-      const allMessagesString = localStorage.getItem("messages");
-      const allMessages = allMessagesString ? JSON.parse(allMessagesString) : [];
-      allMessages.push(newReply);
-      localStorage.setItem("messages", JSON.stringify(allMessages));
+    const navigationState = location.state;
+
+    if (navigationState && navigationState.openWithSellerId) {
+      const { openWithSellerId, productContext } = navigationState;
+      console.log("BuyerMessages: Received state to open conversation with seller:", openWithSellerId, "Product:", productContext?.name);
+
+      // Find or create conversation
+      const conversationIdToOpen = findOrCreateConversation(currentUser.id, openWithSellerId);
       
-      toast.success("Reply sent!");
-      setReplyContent(prev => ({ ...prev, [sellerId]: "" }));
-      loadAndProcessMessages(); 
-    } catch (error) {
-      console.error("Error sending reply:", error);
-      toast.error("Could not send reply.");
+      // Load all conversations, then select the target one
+      loadConversations(() => {
+        const fullConvo = getConversationById(conversationIdToOpen, currentUser.id);
+        if (fullConvo) {
+          setSelectedConversation(fullConvo);
+          console.log("BuyerMessages: Automatically selected conversation:", fullConvo.id);
+          if (productContext?.name) {
+            setNewMessage(`Regarding your product: ${productContext.name}\n\n`);
+            // Focus the input field if possible
+            const inputField = document.querySelector('input[placeholder="Type a message..."]');
+            if (inputField) inputField.focus();
+          }
+        } else {
+          console.warn("BuyerMessages: Could not find or create conversation for sellerId:", openWithSellerId);
+        }
+      });
+
+      // Clear the state from location to prevent re-triggering on refresh/navigation
+      navigate(location.pathname, { replace: true, state: {} });
+    } else {
+      // Normal load if no specific conversation is to be opened
+      loadConversations();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthLoading, currentUser, location.state]); // location.state is the key dependency here for initial open
+
+
+  const handleSelectConversation = useCallback((conversationId) => {
+    if (!currentUser) return;
+    const fullConvo = getConversationById(conversationId, currentUser.id);
+    setSelectedConversation(fullConvo);
+    setConversations(prev => 
+        prev.map(c => c.id === conversationId ? {...c, isUnread: false, unreadMessagesCount: 0} : c)
+    );
+  }, [currentUser]);
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedConversation || !currentUser || isSending) return;
+
+    setIsSending(true);
+    setTimeout(() => {
+      const updatedConversation = sendMockMessage(selectedConversation.id, currentUser.id, newMessage.trim());
+      if (updatedConversation) {
+        const refreshedConvo = getConversationById(selectedConversation.id, currentUser.id);
+        setSelectedConversation(refreshedConvo); 
+        loadConversations(); 
+      } else {
+        toast.error("Failed to send message.");
+      }
+      setNewMessage("");
+      setIsSending(false);
+    }, 300);
   };
   
-  const conversationArray = useMemo(() => Object.values(conversations).sort((a,b) => {
-    const lastMsgA = a.messages[a.messages.length - 1]?.date;
-    const lastMsgB = b.messages[b.messages.length - 1]?.date;
-    if (!lastMsgA || !lastMsgB) return 0;
-    return new Date(lastMsgB) - new Date(lastMsgA);
-  }), [conversations]);
+  const handleBackToList = () => {
+    setSelectedConversation(null);
+    loadConversations();
+  };
 
-  if (isAuthLoading || isLoadingMessages) {
+  if (isAuthLoading || (isLoadingMessages && conversations.length === 0 && !location.state?.openWithSellerId)) {
     return (
-      <div className="flex min-h-screen bg-gray-100">
-        <Sidebar links={buyerLinks} userRole="Buyer" userName={buyerData?.firstName || "User"} />
-        <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
-          <p className="text-gray-500 animate-pulse">Loading Your Messages...</p>
+      <div className="flex h-screen bg-gray-100">
+        <Sidebar links={buyerLinks} userRole="Buyer" userName={currentUserDetails?.name || "User"} />
+        <main className="flex-1 p-6 flex justify-center items-center">
+          <p className="text-gray-500 animate-pulse text-lg">Loading Your Messages...</p>
         </main>
       </div>
     );
   }
-  
-  if (!buyerData) {
+
+  if (!isAuthenticated || userRole !== 'Buyer') {
      return (
-      <div className="flex min-h-screen bg-gray-100">
+      <div className="flex h-screen bg-gray-100">
         <Sidebar links={buyerLinks} userRole="Buyer" />
-        <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
-          <p className="text-gray-600">Please log in as a buyer to view your messages.</p>
+        <main className="flex-1 p-6 flex flex-col justify-center items-center text-center">
+            <ChatBubbleLeftEllipsisIcon className="h-16 w-16 text-gray-300 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">Access Denied</h2>
+            <p className="text-gray-600">Please sign in as a Buyer to view your messages.</p>
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar links={buyerLinks} userRole="Buyer" userName={buyerData.firstName} />
-      <main className="flex-1 p-6 sm:p-8">
-        <header className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center">
-            <InboxArrowDownIcon className="h-8 w-8 mr-3 text-purple-600" />
-            Your Conversations
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            View and reply to messages with sellers.
-          </p>
-        </header>
-
-        {conversationArray.length > 0 ? (
-          <div className="space-y-8">
-            {conversationArray.map(convo => (
-              <div key={convo.sellerId} className="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-700 mb-4 border-b pb-3">
-                  Conversation with: <span className="text-purple-600">{convo.sellerName}</span>
-                </h2>
-                <div className="space-y-4 max-h-96 overflow-y-auto pr-2 mb-4">
-                  {convo.messages.map(msg => (
-                    <div 
-                      key={msg.id} 
-                      className={`flex ${String(msg.senderId) === String(buyerData.id) ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-[70%] p-3 rounded-lg shadow-sm ${
-                        String(msg.senderId) === String(buyerData.id) 
-                          ? 'bg-purple-500 text-white' // Buyer's messages
-                          : 'bg-gray-200 text-gray-800'   // Seller's messages
-                      }`}>
-                        <p className="text-xs font-medium mb-0.5">
-                          {String(msg.senderId) === String(buyerData.id) ? "You" : msg.senderName}
-                        </p>
-                        <p className="text-sm">{msg.content}</p>
-                        <p className="text-xs mt-1.5 opacity-75 text-right">
-                          {new Date(msg.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} | {new Date(msg.date).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <Sidebar links={buyerLinks} userRole="Buyer" userName={currentUserDetails?.name || "User"} />
+      
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <div className={`
+          ${selectedConversation && 'hidden md:flex'} md:flex-col 
+          w-full md:w-2/5 lg:w-1/3 xl:w-1/4 
+          border-r border-gray-200 bg-white 
+          flex flex-col
+        `}>
+          <div className="p-4 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-800">Messages</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+            {conversations.length > 0 ? (
+              conversations.map(convo => (
+                <ConversationListItem 
+                  key={convo.id} 
+                  conversation={convo} 
+                  onSelectConversation={handleSelectConversation}
+                  isActive={selectedConversation?.id === convo.id}
+                />
+              ))
+            ) : (
+              !isLoadingMessages && (
+                <div className="p-4 text-center text-gray-500">
+                  <InboxIcon className="h-12 w-12 mx-auto text-gray-300 mb-2" />
+                  No conversations yet.
                 </div>
-                {/* Reply Form */}
-                <form onSubmit={(e) => { e.preventDefault(); handleSendReply(convo.sellerId, convo.sellerName); }} className="mt-4 flex gap-2 items-center border-t pt-4">
+              )
+            )}
+            {isLoadingMessages && conversations.length === 0 && <p className="p-4 text-gray-400">Loading...</p>}
+          </div>
+        </div>
+
+        <div className={`
+          ${!selectedConversation && 'hidden md:flex'} md:flex-col 
+          w-full md:w-3/5 lg:w-2/3 xl:w-3/4 
+          bg-gray-50 flex flex-col
+        `}>
+          {selectedConversation ? (
+            <>
+              <div className="p-3 sm:p-4 border-b border-gray-200 bg-white flex items-center space-x-3 shadow-sm">
+                <button onClick={handleBackToList} className="md:hidden p-2 rounded-full hover:bg-gray-100 text-gray-600">
+                  <ArrowLeftIcon className="h-5 w-5" />
+                </button>
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-500 text-sm">
+                  {selectedConversation.otherParticipant?.avatarFallback || selectedConversation.otherParticipantName?.charAt(0).toUpperCase() || '?'}
+                </div>
+                <div>
+                    <h3 className="text-md font-semibold text-gray-800">{selectedConversation.otherParticipantName || "Conversation"}</h3>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                {selectedConversation.messages.map(msg => (
+                  <ChatMessageBubble 
+                    key={msg.id} 
+                    message={msg} 
+                    currentUserId={currentUser.id}
+                    senderDetails={selectedConversation.participantsDetails[msg.senderId]}
+                  />
+                ))}
+                 {isSending && <p className="text-xs text-gray-400 italic text-center my-2">Sending...</p>}
+              </div>
+
+              <div className="p-3 sm:p-4 border-t border-gray-200 bg-white">
+                <form onSubmit={handleSendMessage} className="flex items-center space-x-2 sm:space-x-3">
                   <input
                     type="text"
-                    value={replyContent[convo.sellerId] || ""}
-                    onChange={(e) => handleReplyChange(convo.sellerId, e.target.value)}
-                    placeholder="Type your reply..."
-                    className="flex-grow px-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 sm:text-sm"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm"
+                    disabled={isSending}
                   />
-                  <button
-                    type="submit"
-                    className="p-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1"
-                    aria-label="Send reply"
+                  <button 
+                    type="submit" 
+                    className="p-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-70"
+                    disabled={!newMessage.trim() || isSending}
+                    aria-label="Send message"
                   >
                     <PaperAirplaneIcon className="h-5 w-5" />
                   </button>
                 </form>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-white rounded-xl shadow-md">
-            <ChatBubbleLeftEllipsisIcon className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">No Conversations Yet</h2>
-            <p className="text-gray-500">
-              Contact a seller from a product page to start a conversation.
-            </p>
-          </div>
-        )}
-      </main>
+            </>
+          ) : (
+            <div className="hidden md:flex flex-1 flex-col justify-center items-center text-center p-8 text-gray-500">
+              <ChatBubbleLeftEllipsisIcon className="h-20 w-20 text-gray-300 mb-4" />
+              <h2 className="text-xl font-semibold">Select a conversation</h2>
+              <p>Choose a conversation from the list to view messages.</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

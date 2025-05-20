@@ -1,10 +1,37 @@
-// src/pages/seller/AddProduct.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/Sidebar";
-import { useAuthContext } from "../../context/AuthContext"; // Import useAuthContext
+import { useNavigate } from "react-router-dom"; // Assuming react-router-dom v6+
+import Sidebar from "../../components/Sidebar"; // Placeholder: Ensure this path is correct
+import { useAuthContext } from "../../context/AuthContext"; // Placeholder: Ensure this path is correct
+import { invalidateCacheEntry } from "../../hooks/useFetchCached"; // Placeholder: Ensure this path is correct
 import toast from 'react-hot-toast';
-import { CameraIcon, XCircleIcon, ArrowUpTrayIcon, ChartBarIcon, ArchiveBoxIcon, PlusCircleIcon, ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
+import { CameraIcon, XCircleIcon, ArrowUpTrayIcon, ChartBarIcon, ArchiveBoxIcon, PlusCircleIcon, ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline"; // Ensure @heroicons/react is installed
+
+// Mock Hooks and Context for standalone functionality if needed for testing
+// const useNavigate = () => (path) => console.log(`Navigate to: ${path}`);
+// const useAuthContext = () => ({
+//   currentUser: { id: 'seller123', firstName: 'John' },
+//   isLoading: false,
+//   userRole: 'Seller',
+// });
+// const invalidateCacheEntry = (key) => console.log(`Cache invalidated for: ${key}`);
+// const Sidebar = ({ links, userRole, userName }) => (
+//   <div className="w-64 bg-gray-800 text-white p-4">
+//     <h2 className="text-xl font-bold mb-4">{userName} ({userRole})</h2>
+//     <nav>
+//       <ul>
+//         {links.map(link => (
+//           <li key={link.path} className="mb-2">
+//             <a href={link.path} className="hover:bg-gray-700 p-2 rounded-md flex items-center">
+//               {link.icon && <link.icon className="h-5 w-5 mr-2" />}
+//               {link.label}
+//             </a>
+//           </li>
+//         ))}
+//       </ul>
+//     </nav>
+//   </div>
+// );
+
 
 export default function AddProduct() {
   // Use AuthContext to get current user (seller) data and loading state
@@ -15,14 +42,14 @@ export default function AddProduct() {
     name: "",
     description: "",
     price: "",
-    category: "Dress", 
+    category: "Dress",
   };
 
   const [formData, setFormData] = useState(initialFormData);
-  const [selectedFile, setSelectedFile] = useState(null); 
-  const [imagePreview, setImagePreview] = useState("");   
-  const [errors, setErrors] = useState({});               
-  const [isSubmitting, setIsSubmitting] = useState(false); 
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(""); // This will store the Data URL (base64)
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Define sellerLinks here, including icons
   const sellerLinks = [
@@ -32,14 +59,10 @@ export default function AddProduct() {
     { label: "Messages", path: "/seller/messages", icon: ChatBubbleLeftEllipsisIcon }
   ];
 
-  useEffect(() => {
-    const currentPreview = imagePreview; 
-    return () => {
-      if (currentPreview && currentPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(currentPreview);
-      }
-    };
-  }, [imagePreview]); 
+  // useEffect for revoking Object URLs is no longer needed if imagePreview stores Data URLs.
+  // If imagePreview could potentially hold blob URLs from other sources (unlikely in this flow),
+  // then a cleanup for 'blob:' URLs would still be relevant.
+  // For this refactor, assuming imagePreview will be a Data URL or empty.
 
   const validateField = useCallback((name, value) => {
     let error = "";
@@ -71,7 +94,7 @@ export default function AddProduct() {
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error || null }));
   };
-  
+
   const handleBlur = (e) => {
     const { name, value } = e.target;
     const error = validateField(name, value);
@@ -81,25 +104,37 @@ export default function AddProduct() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { 
-        setErrors(prev => ({ ...prev, image: "File is too large (max 5MB)." }));
+      if (file.size > 1 * 1024 * 1024) { // Max 1MB
+        setErrors(prev => ({ ...prev, image: "File is too large (max 1MB)." }));
         setSelectedFile(null);
         setImagePreview("");
-        e.target.value = null; 
+        e.target.value = null; // Reset file input
         return;
       }
       if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
         setErrors(prev => ({ ...prev, image: "Invalid file type (JPEG, PNG, GIF, WEBP)." }));
         setSelectedFile(null);
         setImagePreview("");
-        e.target.value = null; 
+        e.target.value = null; // Reset file input
         return;
       }
-      
+
       setSelectedFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-      setErrors(prev => ({ ...prev, image: null })); 
+      // Convert file to Data URL (base64 string)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result); // Set imagePreview to the Data URL
+      };
+      reader.onerror = () => {
+        console.error("Error reading file for Data URL.");
+        toast.error("Could not read image file.");
+        setErrors(prev => ({ ...prev, image: "Could not read image file." }));
+        setSelectedFile(null);
+        setImagePreview("");
+        e.target.value = null;
+      }
+      reader.readAsDataURL(file);
+      setErrors(prev => ({ ...prev, image: null }));
     } else {
       setSelectedFile(null);
       setImagePreview("");
@@ -107,24 +142,21 @@ export default function AddProduct() {
   };
 
   const removeImagePreview = () => {
-    if (imagePreview && imagePreview.startsWith("blob:")) {
-      URL.revokeObjectURL(imagePreview);
-    }
     setSelectedFile(null);
-    setImagePreview("");
+    setImagePreview(""); // Clear the Data URL
     const fileInput = document.getElementById('imageUpload');
-    if (fileInput) fileInput.value = null;
+    if (fileInput) fileInput.value = null; // Reset file input
     setErrors(prev => ({ ...prev, image: null }));
   };
 
   const validateForm = () => {
     const newErrors = {};
     Object.keys(formData).forEach(key => {
-        const error = validateField(key, formData[key]);
-        if (error) newErrors[key] = error;
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
     });
-    if (!selectedFile) {
-        newErrors.image = "Product image is required.";
+    if (!selectedFile) { // Or check !imagePreview if Data URL is the source of truth
+      newErrors.image = "Product image is required.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -135,9 +167,9 @@ export default function AddProduct() {
     setIsSubmitting(true);
 
     if (!currentUser || userRole !== 'Seller') {
-        toast.error("You must be signed in as a Seller to add products.");
-        setIsSubmitting(false);
-        return;
+      toast.error("You must be signed in as a Seller to add products.");
+      setIsSubmitting(false);
+      return;
     }
 
     if (!validateForm()) {
@@ -145,62 +177,70 @@ export default function AddProduct() {
       setIsSubmitting(false);
       return;
     }
-    
+
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const mockImageFileName = `${formData.category.toLowerCase().replace(/\s+/g, '-')}-${formData.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()%1000}.jpg`;
-    const mockImageUrl = `/assets/products/${mockImageFileName}`; 
+    // The imagePreview state now holds the Data URL (base64 string) of the image
+    const imageUrlToStore = imagePreview;
 
     const newProduct = {
-      id: `product-${Date.now()}`,
+      id: `product-${Date.now()}`, // Unique ID
       name: formData.name.trim(),
       description: formData.description.trim(),
       price: parseFloat(formData.price),
       category: formData.category,
-      image: mockImageUrl, 
+      image: imageUrlToStore, // Store the Data URL (base64 string)
       sellerId: currentUser.id // Use ID from AuthContext's currentUser
     };
 
-    const existingProducts = JSON.parse(localStorage.getItem("products")) || [];
-    const updatedProducts = [...existingProducts, newProduct];
-    localStorage.setItem("products", JSON.stringify(updatedProducts));
-    
-    invalidateCacheEntry("allProducts"); // Invalidate product cache
+    try {
+      const existingProducts = JSON.parse(localStorage.getItem("products")) || [];
+      const updatedProducts = [...existingProducts, newProduct];
+      localStorage.setItem("products", JSON.stringify(updatedProducts));
 
-    toast.success("Product added successfully!");
-    setFormData(initialFormData); 
-    removeImagePreview(); 
-    setErrors({}); 
-    setIsSubmitting(false);
-    navigate("/seller/products");
+      invalidateCacheEntry("products"); // Invalidate product cache
+
+      toast.success("Product added successfully!");
+      setFormData(initialFormData);
+      removeImagePreview(); // This will clear selectedFile, imagePreview, and reset the file input
+      setErrors({});
+      navigate("/seller/products");
+
+    } catch (error) {
+      console.error("Error saving product to localStorage:", error);
+      toast.error("Failed to save product. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Handle loading state from AuthContext
   if (isAuthLoading) {
     return (
-        <div className="flex min-h-screen bg-gray-50">
-            {/* Optionally show a simplified sidebar or just a loading message */}
-            <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
-                <p className="text-gray-500 animate-pulse">Loading form...</p>
-            </main>
-        </div>
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Optionally show a simplified sidebar or just a loading message */}
+        <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
+          <p className="text-gray-500 animate-pulse">Loading form...</p>
+        </main>
+      </div>
     );
   }
-  
+
   // Fallback if somehow user is not a seller (ProtectedRoute should handle this)
   if (!currentUser || userRole !== 'Seller') {
     return (
-        <div className="flex min-h-screen bg-gray-50">
-             <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
-                <p className="text-gray-600">Access Denied. Only Sellers can add products.</p>
-            </main>
-        </div>
+      <div className="flex min-h-screen bg-gray-50">
+        <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
+          <p className="text-gray-600">Access Denied. Only Sellers can add products.</p>
+        </main>
+      </div>
     );
   }
 
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 font-sans"> {/* Added font-sans for Tailwind default */}
       {/* Pass user info from AuthContext to Sidebar */}
       <Sidebar links={sellerLinks} userRole="Seller" userName={currentUser?.firstName} />
 
@@ -211,7 +251,7 @@ export default function AddProduct() {
         </header>
 
         <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-xl shadow-xl space-y-6 max-w-3xl mx-auto">
-          
+
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">Product Name</label>
             <input
@@ -263,7 +303,7 @@ export default function AddProduct() {
               {errors.category && <p className="text-xs text-red-600 mt-1.5">{errors.category}</p>}
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Product Image</label>
             <div className={`mt-1 flex flex-col items-center justify-center px-6 pt-8 pb-8 border-2 ${errors.image ? 'border-red-400' : 'border-gray-300'} border-dashed rounded-lg hover:border-blue-400 transition-colors`}>
@@ -276,13 +316,20 @@ export default function AddProduct() {
                       className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500 px-1"
                     >
                       <span>Upload a file</span>
-                      <input id="imageUpload" name="imageUpload" type="file" className="sr-only" onChange={handleImageChange} accept="image/png, image/jpeg, image/gif, image/webp" />
+                      <input
+                        id="imageUpload"
+                        name="imageUpload"
+                        type="file"
+                        className="sr-only"
+                        onChange={handleImageChange}
+                        accept="image/png, image/jpeg, image/gif, image/webp"
+                      />
                     </label>
                   </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 5MB</p>
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 1MB</p>
                 </div>
               ) : (
-                <div className="relative group w-full max-w-xs mx-auto"> 
+                <div className="relative group w-full max-w-xs mx-auto">
                   <img src={imagePreview} alt="Product Preview" className="mx-auto h-48 w-auto object-contain rounded-md shadow-md" />
                   <button
                     type="button"

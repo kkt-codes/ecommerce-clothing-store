@@ -1,28 +1,30 @@
-import React, { useEffect, useState, useMemo } from 'react';
+// src/pages/buyer/BuyerFavorites.jsx
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import ProductCard from '../../components/ProductCard';
-import { useBuyerAuth } from '../../hooks/useBuyerAuth';
+import { useAuthContext } from '../../context/AuthContext'; // Import global AuthContext
 import { useFavorites } from '../../context/FavoritesContext';
-import { useFetchCached } from '../../hooks/useFetchCached'; // To get all product details
-import { HeartIcon as EmptyHeartIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'; // For empty state
-import { ChartBarIcon, ListBulletIcon, ChatBubbleLeftEllipsisIcon, UserCircleIcon, HeartIcon } from "@heroicons/react/24/outline"; // Icons for sidebar
+import { useFetchCached } from '../../hooks/useFetchCached'; 
+import { HeartIcon as EmptyHeartIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'; 
+import { ChartBarIcon, ListBulletIcon, ChatBubbleLeftEllipsisIcon, UserCircleIcon, HeartIcon } from "@heroicons/react/24/outline"; // Sidebar icons
 
 export default function BuyerFavoritesPage() {
-  const { buyerData, isLoading: isAuthLoading } = useBuyerAuth();
+  // Use the global AuthContext
+  const { currentUser, isAuthenticated, userRole, isLoading: isAuthLoading } = useAuthContext(); 
   const { favoriteIds } = useFavorites();
 
-  // Fetch all products to get details of favorited items
   const { 
     data: allProducts, 
     loading: productsLoading, 
     error: productsError 
-  } = useFetchCached("allProducts", "/data/products.json");
+  } = useFetchCached("products", "/data/products.json", { useLocalStoragePersistence: true });
 
   const [favoriteProducts, setFavoriteProducts] = useState([]);
-  const [isLoadingPage, setIsLoadingPage] = useState(true);
+  // Combined loading state for this page
+  const [isLoadingPage, setIsLoadingPage] = useState(true); 
 
-  // Buyer Sidebar Links - Copied from BuyerDashboard for consistency
+  // Buyer Sidebar Links - Ensure icons are defined
   const buyerLinks = [
     { label: "Dashboard", path: "/buyer/dashboard", icon: ChartBarIcon },
     { label: "My Orders", path: "/buyer/orders", icon: ListBulletIcon },
@@ -32,35 +34,44 @@ export default function BuyerFavoritesPage() {
   ];
 
   useEffect(() => {
-    if (!productsLoading && !isAuthLoading) {
-      if (allProducts && buyerData && favoriteIds) {
-        const likedProducts = allProducts.filter(product => favoriteIds.has(String(product.id)));
-        setFavoriteProducts(likedProducts);
-      } else {
-        setFavoriteProducts([]); // Clear if no products, buyer, or favorites
-      }
-      setIsLoadingPage(false);
+    // Wait for both authentication and product data to finish loading
+    if (isAuthLoading || productsLoading) {
+      setIsLoadingPage(true); // Keep showing page loading
+      return;
     }
-  }, [allProducts, productsLoading, buyerData, isAuthLoading, favoriteIds]);
 
+    setIsLoadingPage(true); // Start processing favorites
+    if (isAuthenticated && currentUser && userRole === 'Buyer' && allProducts && favoriteIds) {
+      const likedProducts = allProducts.filter(product => favoriteIds.has(String(product.id)));
+      setFavoriteProducts(likedProducts);
+    } else {
+      setFavoriteProducts([]); // Clear if not a buyer, not authenticated, or data missing
+    }
+    setIsLoadingPage(false); // Finished processing favorites
+  }, [allProducts, productsLoading, currentUser, isAuthenticated, userRole, isAuthLoading, favoriteIds]);
+
+  // Show loading state if either auth or page-specific data is loading
   if (isAuthLoading || isLoadingPage) {
     return (
       <div className="flex min-h-screen bg-gray-100">
-        <Sidebar links={buyerLinks} userRole="Buyer" userName={buyerData?.firstName || "User"} />
+        {/* Show sidebar with current user info if available, or generic if still loading */}
+        <Sidebar links={buyerLinks} userRole="Buyer" userName={currentUser?.firstName || "User"} />
         <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
-          <p className="text-gray-500 animate-pulse">Loading Your Favorites...</p>
+          <p className="text-gray-500 animate-pulse text-lg">Loading Your Favorites...</p>
         </main>
       </div>
     );
   }
 
-  if (!buyerData) {
-    // This should ideally be handled by BuyerProtectedRoute, but as a fallback
+  // If not authenticated as a Buyer (ProtectedRoute should also handle this, but good as a fallback)
+  if (!isAuthenticated || userRole !== 'Buyer') {
     return (
         <div className="flex min-h-screen bg-gray-100">
-             {/* Render a basic sidebar or none if buyerData is crucial for it */}
-            <main className="flex-1 p-6 sm:p-8 flex justify-center items-center">
-                <p className="text-gray-600">Please log in to view your favorites.</p>
+            <Sidebar links={buyerLinks} userRole="Buyer" /> {/* Basic sidebar */}
+            <main className="flex-1 p-6 sm:p-8 flex flex-col justify-center items-center text-center">
+                <EmptyHeartIcon className="h-16 w-16 text-gray-300 mb-4" />
+                <h2 className="text-xl font-semibold text-gray-700 mb-2">Access Denied</h2>
+                <p className="text-gray-600">Please sign in as a Buyer to view your favorites.</p>
             </main>
         </div>
     );
@@ -69,10 +80,11 @@ export default function BuyerFavoritesPage() {
   if (productsError) {
     return (
       <div className="flex min-h-screen bg-gray-100">
-        <Sidebar links={buyerLinks} userRole="Buyer" userName={buyerData.firstName} />
+        <Sidebar links={buyerLinks} userRole="Buyer" userName={currentUser?.firstName} />
         <main className="flex-1 p-6 sm:p-8 text-center">
           <h2 className="text-xl font-semibold text-red-600 mb-3">Error Loading Product Data</h2>
           <p className="text-gray-600">{productsError.message}</p>
+          {/* Optionally add a refetch button here if useFetchCached provides one */}
         </main>
       </div>
     );
@@ -80,7 +92,7 @@ export default function BuyerFavoritesPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar links={buyerLinks} userRole="Buyer" userName={buyerData.firstName} />
+      <Sidebar links={buyerLinks} userRole="Buyer" userName={currentUser?.firstName} />
       <main className="flex-1 p-6 sm:p-8">
         <header className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex items-center">

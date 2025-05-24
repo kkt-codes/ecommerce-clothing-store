@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -194,7 +193,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== New Arrivals Section (Logic Updated) ===== */}
+      {/* ===== New Arrivals Section ===== */}
       <section className="py-12 sm:py-16 bg-gray-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">
@@ -212,7 +211,7 @@ export default function Home() {
         </div>
       </section>
       
-      {/* ===== Featured Products Section (Logic Updated) ===== */}
+      {/* ===== Featured Products Section ===== */}
       <section className="py-12 sm:py-16 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">
@@ -230,7 +229,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== Brand Highlights Section (As Is) ===== */}
+      {/* ===== Brand Highlights Section ===== */}
       <section className="py-12 sm:py-16 bg-gradient-to-br from-purple-600 to-blue-700 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">

@@ -1,6 +1,5 @@
 // Filters for category, price, rating, search
 
-// src/components/ProductFilter.jsx
 import React from 'react';
 import { AdjustmentsHorizontalIcon, ArrowsUpDownIcon, StarIcon as OutlineStarIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { StarIcon as SolidStarIcon } from '@heroicons/react/24/solid';

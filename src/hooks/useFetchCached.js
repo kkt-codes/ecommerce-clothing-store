@@ -1,4 +1,3 @@
-// src/hooks/useFetchCached.js
 import { useState, useEffect, useCallback } from 'react';
 
 /**

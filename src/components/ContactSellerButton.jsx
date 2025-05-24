@@ -1,9 +1,9 @@
-import React from 'react'; // Added React import
+//import React from 'react';
 import { useAuthContext } from "../context/AuthContext"; 
 import { useNavigate } from "react-router-dom";
 import { useSignupSigninModal } from "../hooks/useSignupSigninModal.jsx";
 import toast from 'react-hot-toast';
-import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'; // Using a more relevant icon
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
 export default function ContactSellerButton({ sellerId, sellerName, productName, productId }) {
   const { isAuthenticated, currentUser, userRole } = useAuthContext(); 

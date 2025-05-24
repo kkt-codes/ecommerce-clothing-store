@@ -1,4 +1,3 @@
-// src/pages/About.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SparklesIcon, ShieldCheckIcon, HeartIcon, UserGroupIcon, LightBulbIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';

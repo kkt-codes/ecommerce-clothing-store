@@ -1,9 +1,8 @@
-// src/pages/buyer/BuyerFavorites.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import ProductCard from '../../components/ProductCard';
-import { useAuthContext } from '../../context/AuthContext'; // Import global AuthContext
+import { useAuthContext } from '../../context/AuthContext';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useFetchCached } from '../../hooks/useFetchCached'; 
 import { HeartIcon as EmptyHeartIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'; 

@@ -3,37 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../../components/Sidebar";
 import { useAuthContext } from "../../context/AuthContext";
 import toast from 'react-hot-toast';
-import { ArrowUpTrayIcon, XCircleIcon, ChartBarIcon, ArchiveBoxIcon, PlusCircleIcon, ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline"; // Ensure @heroicons/react is installed
-import initialProductsData from "../../data/products.json"; // Fallback if not in localStorage
-import { invalidateCacheEntry } from "../../hooks/useFetchCached"; // Placeholder: For cache invalidation
-
-// Mock Hooks and Context for standalone functionality if needed for testing
-// const useNavigate = () => (path) => console.log(`Navigate to: ${path}`);
-// const useAuthContext = () => ({
-//   currentUser: { id: 'seller123', firstName: 'John' },
-//   isLoading: false,
-//   userRole: 'Seller',
-// });
-// const invalidateCacheEntry = (key) => console.log(`Cache invalidated for: ${key}`);
-// const initialProductsData = []; // Mock if products.json is not available
-// const Sidebar = ({ links, userRole, userName }) => (
-//   <div className="w-64 bg-gray-800 text-white p-4">
-//     <h2 className="text-xl font-bold mb-4">{userName} ({userRole})</h2>
-//     <nav>
-//       <ul>
-//         {links.map(link => (
-//           <li key={link.path} className="mb-2">
-//             <a href={link.path} className="hover:bg-gray-700 p-2 rounded-md flex items-center">
-//               {link.icon && <link.icon className="h-5 w-5 mr-2" />}
-//               {link.label}
-//             </a>
-//           </li>
-//         ))}
-//       </ul>
-//     </nav>
-//   </div>
-// );
-
+import { ArrowUpTrayIcon, XCircleIcon, ChartBarIcon, ArchiveBoxIcon, PlusCircleIcon, ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
+import { invalidateCacheEntry } from "../../hooks/useFetchCached";
 
 export default function EditProduct() {
   const { id: productId } = useParams();
@@ -48,14 +19,15 @@ export default function EditProduct() {
   };
 
   const [formData, setFormData] = useState(initialFormState);
-  const [selectedFile, setSelectedFile] = useState(null); // Stores the new File object if user uploads one
-  const [imagePreview, setImagePreview] = useState("");   // Stores Data URL (base64) for preview and submission
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
-  const [originalProductName, setOriginalProductName] = useState(""); // For header display
+  const [originalProductName, setOriginalProductName] = useState("");
+  // State to store the products list from localStorage, making it accessible to handleSubmit
+  const [productsFromStorage, setProductsFromStorage] = useState([]);
 
-  // Seller Sidebar Links
   const sellerLinks = [
     { label: "Dashboard", path: "/seller/dashboard", icon: ChartBarIcon },
     { label: "My Products", path: "/seller/products", icon: ArchiveBoxIcon },
@@ -63,7 +35,6 @@ export default function EditProduct() {
     { label: "Messages", path: "/seller/messages", icon: ChatBubbleLeftEllipsisIcon }
   ];
 
-  // Effect to load product data
   useEffect(() => {
     if (isAuthLoading) {
       setIsLoadingProduct(true);
@@ -71,45 +42,41 @@ export default function EditProduct() {
     }
     if (!currentUser || userRole !== 'Seller') {
       toast.error("You must be signed in as a Seller to edit products.");
-      navigate("/seller/dashboard"); // Or your login/home page
+      navigate("/seller/dashboard");
       setIsLoadingProduct(false);
       return;
     }
 
     setIsLoadingProduct(true);
     let productToEdit = null;
-    let currentProducts = [];
+    let loadedProducts = []; // Renamed to avoid confusion with state variable
     try {
       const localProductsString = localStorage.getItem("products");
-      // Use initialProductsData as a fallback if localStorage is empty or invalid
-      currentProducts = localProductsString ? JSON.parse(localProductsString) : initialProductsData;
+      loadedProducts = localProductsString ? JSON.parse(localProductsString) : [];
+      setProductsFromStorage(loadedProducts); // Store loaded products in state
     } catch (e) {
       console.error("Error parsing products from localStorage for edit page:", e);
-      currentProducts = initialProductsData; // Fallback to static data on error
+      loadedProducts = []; 
+      setProductsFromStorage([]); // Set to empty array on error
     }
 
-    // Find the product ensuring IDs and sellerId match
-    productToEdit = currentProducts.find(p => String(p.id) === String(productId) && String(p.sellerId) === String(currentUser.id));
+    productToEdit = loadedProducts.find(p => String(p.id) === String(productId) && String(p.sellerId) === String(currentUser.id));
 
     if (productToEdit) {
       setFormData({
         name: productToEdit.name,
         description: productToEdit.description,
-        price: String(productToEdit.price), // Ensure price is a string for the input field
+        price: String(productToEdit.price),
         category: productToEdit.category,
       });
-      // imagePreview will store the Data URL (base64) from localStorage
-      setImagePreview(productToEdit.image || ""); // Initialize with existing image or empty string
-      setOriginalProductName(productToEdit.name); // For display in header
+      setImagePreview(productToEdit.image || "");
+      setOriginalProductName(productToEdit.name);
     } else {
-      toast.error("Product not found or you do not have permission to edit it.");
+      toast.error("Product not found or you do not have permission to edit it. Ensure products are loaded by visiting the shop first.");
       navigate("/seller/products");
     }
     setIsLoadingProduct(false);
   }, [productId, currentUser, userRole, isAuthLoading, navigate]);
-
-  // Note: The useEffect for revoking blob URLs is removed as we are now directly using Data URLs (base64)
-  // for imagePreview, similar to AddProduct.jsx.
 
   const validateField = useCallback((name, value) => {
     let error = "";
@@ -148,67 +115,54 @@ export default function EditProduct() {
     setErrors(prev => ({ ...prev, [name]: error || null }));
   };
 
-  // Handles new image selection, converts to Data URL (base64) for preview
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 1 * 1024 * 1024) { // Max 1MB
         setErrors(prev => ({ ...prev, image: "File is too large (max 1MB)." }));
-        setSelectedFile(null); // Clear selected file
-        // Do not revert imagePreview here, user might want to keep existing if new one is invalid
-        e.target.value = null; // Reset file input
+        setSelectedFile(null);
+        e.target.value = null;
         return;
       }
       if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
         setErrors(prev => ({ ...prev, image: "Invalid file type (JPEG, PNG, GIF, WEBP)." }));
         setSelectedFile(null);
-        e.target.value = null; // Reset file input
+        e.target.value = null;
         return;
       }
 
-      setSelectedFile(file); // Store the new File object
-
-      // Convert file to Data URL (base64 string) for preview
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result); // Set imagePreview to the new Data URL
+        setImagePreview(reader.result);
       };
       reader.onerror = () => {
         console.error("Error reading file for Data URL.");
         toast.error("Could not read image file.");
         setErrors(prev => ({ ...prev, image: "Could not read image file." }));
-        setSelectedFile(null); // Clear on error
-        // Potentially revert to original image if desired, or leave as is
-        // For now, if read fails, preview might be broken or show old if not cleared.
-        // Let's clear selectedFile and let user try again.
+        setSelectedFile(null);
         e.target.value = null;
       }
       reader.readAsDataURL(file);
-      setErrors(prev => ({ ...prev, image: null })); // Clear image error if any
+      setErrors(prev => ({ ...prev, image: null }));
     }
   };
 
-  // Removes the current image preview (whether it's new or existing being shown)
-  // and clears any newly selected file.
   const removeImagePreview = () => {
     setSelectedFile(null);
-    setImagePreview(""); // Clear the Data URL, so upload prompt shows
+    setImagePreview("");
     const fileInput = document.getElementById('imageUpload');
-    if (fileInput) fileInput.value = null; // Reset file input
+    if (fileInput) fileInput.value = null;
     setErrors(prev => ({ ...prev, image: null }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    // Validate text fields
     Object.keys(initialFormState).forEach(key => {
       const error = validateField(key, formData[key]);
       if (error) newErrors[key] = error;
     });
-
-    // Validate image: An image is required.
-    // imagePreview will be empty if user clicked "remove" or if it was never there and not uploaded.
-    if (!imagePreview) {
+    if (!imagePreview) { // Image is required, check if preview (Data URL) is present
       newErrors.image = "Product image is required.";
     }
     setErrors(newErrors);
@@ -231,36 +185,33 @@ export default function EditProduct() {
       return;
     }
 
-    // Simulate API delay (optional)
-    // await new Promise(resolve => setTimeout(resolve, 1000));
+    const imageUrlToStore = imagePreview; 
 
-    // The imagePreview state holds the Data URL (base64 string) of the image to be saved.
-    // This will be the newly uploaded image's Data URL if 'selectedFile' was processed,
-    // or the existing image's Data URL if no new image was selected and validated,
-    // or an empty string if the user removed the image (and validation allows it - current doesn't).
-    const imageUrlToStore = imagePreview;
+    // Find the product from the state variable 'productsFromStorage'
+    const productBeingEdited = productsFromStorage.find(p => String(p.id) === String(productId));
 
     const updatedProductData = {
-      id: productId, // Keep the original product ID
+      id: productId,
       name: formData.name.trim(),
       description: formData.description.trim(),
       price: parseFloat(formData.price),
       category: formData.category,
-      image: imageUrlToStore, // This is the Base64 Data URL
-      sellerId: currentUser.id
+      image: imageUrlToStore,
+      sellerId: currentUser.id,
+      // Preserve existing reviews and ratings if they exist on the product object
+      ...(productBeingEdited?.reviews && { reviews: productBeingEdited.reviews }),
+      ...(productBeingEdited?.averageRating && { averageRating: productBeingEdited.averageRating }),
+      ...(productBeingEdited?.numberOfReviews && { numberOfReviews: productBeingEdited.numberOfReviews }),
     };
 
     try {
-      let currentProducts = [];
-      const localProductsString = localStorage.getItem("products");
-      currentProducts = localProductsString ? JSON.parse(localProductsString) : initialProductsData;
-
-      const updatedProducts = currentProducts.map(p =>
+      // 'productsFromStorage' already holds the current list of products from localStorage (via useEffect)
+      const updatedProducts = productsFromStorage.map(p =>
         String(p.id) === String(productId) ? updatedProductData : p
       );
       localStorage.setItem("products", JSON.stringify(updatedProducts));
 
-      invalidateCacheEntry("products"); // Invalidate product cache
+      invalidateCacheEntry("products");
 
       toast.success("Product updated successfully!");
       navigate("/seller/products");
@@ -277,7 +228,6 @@ export default function EditProduct() {
     }
   };
 
-  // Render loading state for auth or product data
   if (isAuthLoading || isLoadingProduct) {
     return (
       <div className="flex min-h-screen bg-gray-50">
@@ -289,7 +239,6 @@ export default function EditProduct() {
     );
   }
 
-  // Render access denied if not a seller (should be caught by ProtectedRoute ideally)
   if (!currentUser || userRole !== 'Seller') {
     return (
       <div className="flex min-h-screen bg-gray-50">
@@ -310,7 +259,6 @@ export default function EditProduct() {
         </header>
 
         <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-xl shadow-xl space-y-6 max-w-3xl mx-auto">
-          {/* Product Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">Product Name</label>
             <input
@@ -321,7 +269,6 @@ export default function EditProduct() {
             {errors.name && <p className="text-xs text-red-600 mt-1.5">{errors.name}</p>}
           </div>
 
-          {/* Description */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
             <textarea
@@ -332,7 +279,6 @@ export default function EditProduct() {
             {errors.description && <p className="text-xs text-red-600 mt-1.5">{errors.description}</p>}
           </div>
 
-          {/* Price and Category Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1.5">Price ($)</label>
@@ -361,7 +307,6 @@ export default function EditProduct() {
             </div>
           </div>
 
-          {/* Product Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Product Image</label>
             <div className={`mt-1 flex flex-col items-center justify-center px-6 pt-8 pb-8 border-2 ${errors.image ? 'border-red-400' : 'border-gray-300'} border-dashed rounded-lg hover:border-blue-400 transition-colors`}>
@@ -394,15 +339,13 @@ export default function EditProduct() {
               )}
             </div>
             {errors.image && <p className="text-xs text-red-600 mt-1.5">{errors.image}</p>}
-            {/* Informative text if showing an existing image and no new file is selected */}
-            {imagePreview && !selectedFile && (formData.name || originalProductName) &&  /* Check if it's an existing product being edited */
+            {imagePreview && !selectedFile && (formData.name || originalProductName) &&
                  <p className="text-xs text-gray-500 mt-1 text-center">
                     Currently showing existing image. Upload a new file to change it, or click 'X' to remove.
                  </p>
             }
           </div>
 
-          {/* Submit Button */}
           <div className="pt-4">
             <button
               type="submit"

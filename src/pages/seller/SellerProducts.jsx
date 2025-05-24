@@ -113,7 +113,7 @@ export default function SellerProducts() {
         </div>
       ),
       {
-        duration: 1000, // Keep open until dismissed by user action
+        duration: 1000,
         position: "top-center",
         style: { /* Default react-hot-toast styles will apply, or customize here */ },
       }

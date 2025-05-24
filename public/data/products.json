@@ -1,7 +1,7 @@
 [
   {
     "id": "dress-001",
-    "name": "Elegant Red Dress",
+    "name": "Elegant White Dress",
     "description": "Stylish red dress perfect for evening events.",
     "price": 129.99,
     "category": "Dress",
@@ -54,8 +54,8 @@
   },
   {
     "id": "dress-003",
-    "name": "Classic Black Dress",
-    "description": "Timeless black dress for formal occasions. A must-have in every wardrobe.",
+    "name": "Classic Green Dress",
+    "description": "Timeless green dress for formal occasions. A must-have in every wardrobe.",
     "price": 149.00,
     "category": "Dress",
     "image": "/assets/clothes/dress/dress-3.jpg",
@@ -122,7 +122,7 @@
   },
   {
     "id": "jacket-001",
-    "name": "Denim Blue Jacket",
+    "name": "Denim Brown Jacket",
     "description": "Classic denim jacket with a rugged look, perfect for layering.",
     "price": 89.99,
     "category": "Jacket",
@@ -221,8 +221,8 @@
   },
   {
     "id": "jacket-006",
-    "name": "Puffer Jacket",
-    "description": "Warm puffer jacket ideal for snowy days. Cozy and fashionable.",
+    "name": "Leather Jacket",
+    "description": "Crafted from high-quality, supple leather- designed to provide both comfort and durability.",
     "price": 190.50,
     "category": "Jacket",
     "image": "/assets/clothes/jacket/jacket-6.jpg",
@@ -233,8 +233,8 @@
   },
   {
     "id": "kids-001",
-    "name": "Kids Rainbow T-shirt",
-    "description": "Bright t-shirt perfect for kids' fun days.",
+    "name": "Kids Floral Dress",
+    "description": "Lovely floral dress for little girls.",
     "price": 25.00,
     "category": "Kids",
     "image": "/assets/clothes/kids/kids-1.jpg",
@@ -308,8 +308,8 @@
   },
   {
     "id": "kids-004",
-    "name": "Kids Floral Dress",
-    "description": "Lovely floral dress for little girls.",
+    "name": "Kids Pink T-Shirt",
+    "description": "Perfect blend of style and comfort for your little ones.",
     "price": 48.00,
     "category": "Kids",
     "image": "/assets/clothes/kids/kids-4.jpg",
@@ -320,8 +320,8 @@
   },
   {
     "id": "kids-005",
-    "name": "Kids Hoodie",
-    "description": "Comfortable hoodie for boys and girls.",
+    "name": "Kids Denim Jacket",
+    "description": "Comfortable wear for boys and girls.",
     "price": 40.00,
     "category": "Kids",
     "image": "/assets/clothes/kids/kids-5.jpg",
@@ -344,8 +344,8 @@
   },
   {
     "id": "shirt-001",
-    "name": "White Cotton Shirt",
-    "description": "Classic white shirt for any occasion.",
+    "name": "Striped Office Shirt",
+    "description": "Professional shirt with striped pattern.",
     "price": 59.99,
     "category": "Shirt",
     "image": "/assets/clothes/shirt/shirt-1.jpg",
@@ -388,8 +388,8 @@
   },
   {
     "id": "shirt-003",
-    "name": "Linen Summer Shirt",
-    "description": "Breathable linen shirt for hot days.",
+    "name": "Denim Shirt",
+    "description": "Casual denim shirt with button details.",
     "price": 70.00,
     "category": "Shirt",
     "image": "/assets/clothes/shirt/shirt-3.jpg",
@@ -422,8 +422,8 @@
   },
   {
     "id": "shirt-005",
-    "name": "Denim Shirt",
-    "description": "Casual denim shirt with button details.",
+    "name": "Classic Blue Button-Up Shirt",
+    "description": "A versatile essential for any occasion. Made from soft, breathable fabric, this shirt offers both comfort and style.",
     "price": 75.00,
     "category": "Shirt",
     "image": "/assets/clothes/shirt/shirt-5.jpg",
@@ -434,8 +434,8 @@
   },
   {
     "id": "shirt-006",
-    "name": "Striped Office Shirt",
-    "description": "Professional shirt with striped pattern.",
+    "name": "White Cotton Shirt ",
+    "description": "Classic white shirt for any occasion.",
     "price": 90.00,
     "category": "Shirt",
     "image": "/assets/clothes/shirt/shirt-6.jpg",
@@ -468,8 +468,8 @@
   },
   {
     "id": "tshirt-002",
-    "name": "Plain White T-shirt",
-    "description": "Simple, everyday basic white tee.",
+    "name": "Plain Black T-shirt",
+    "description": "Simple, everyday basic black tee.",
     "price": 20.00,
     "category": "T-shirt",
     "image": "/assets/clothes/t-shirt/t-shirt-2.jpg",
@@ -524,7 +524,7 @@
   },
   {
     "id": "tshirt-005",
-    "name": "Pocket T-shirt",
+    "name": "Plain White T-shirt",
     "description": "Comfortable t-shirt with chest pocket.",
     "price": 28.50,
     "category": "T-shirt",

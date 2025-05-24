@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom"; // Assuming react-router-dom v6+
-import Sidebar from "../../components/Sidebar"; // Placeholder: Ensure this path is correct
-import { useAuthContext } from "../../context/AuthContext"; // Placeholder: Ensure this path is correct
-import { invalidateCacheEntry } from "../../hooks/useFetchCached"; // Placeholder: Ensure this path is correct
+import { useNavigate } from "react-router-dom";
+import Sidebar from "../../components/Sidebar";
+import { useAuthContext } from "../../context/AuthContext";
+import { invalidateCacheEntry } from "../../hooks/useFetchCached";
 import toast from 'react-hot-toast';
 import { CameraIcon, XCircleIcon, ArrowUpTrayIcon, ChartBarIcon, ArchiveBoxIcon, PlusCircleIcon, ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline"; // Ensure @heroicons/react is installed
 

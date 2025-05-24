@@ -1,6 +1,5 @@
-// src/context/CartContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuthContext } from './AuthContext'; // Import the global AuthContext
+import { useAuthContext } from './AuthContext';
 import toast from 'react-hot-toast'; 
 
 const CartContext = createContext(null);

@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { UserCircleIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid"; 
+import { UserCircleIcon, ArrowLeftStartOnRectangleIcon } from "@heroicons/react/24/solid"; 
 import { useAuthContext } from '../context/AuthContext'; // Import the global AuthContext
 import toast from "react-hot-toast";
 
@@ -71,7 +71,7 @@ export default function Sidebar({ links, userRole, userName }) {
           disabled={authIsLoading} // Disable button if auth operations are in progress
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-all duration-200 ease-in-out group disabled:opacity-70"
         >
-          <ArrowLeftOnRectangleIcon className="h-5 w-5 text-red-500 group-hover:text-red-600 transition-colors" />
+          <ArrowLeftStartOnRectangleIcon className="h-5 w-5 text-red-500 group-hover:text-red-600 transition-colors" />
           <span>Sign Out</span>
         </button>
       </div>

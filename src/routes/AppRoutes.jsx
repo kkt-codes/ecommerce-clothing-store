@@ -1,6 +1,4 @@
 // React-router routes
-
-// src/routes/AppRoutes.jsx
 import { Routes, Route } from "react-router-dom";
 
 // Import Public Pages

@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { getConversationsForUser, getConversationById, sendMockMessage, getMockUserById, findOrCreateConversation } from "../../data/mockMessages"; // Added findOrCreateConversation
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
-import { useLocation, useNavigate } from 'react-router-dom'; // Added useLocation and useNavigate
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // Buyer Sidebar Links
 const buyerLinks = [

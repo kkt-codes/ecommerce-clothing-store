@@ -1,4 +1,3 @@
-// src/pages/seller/SellerMessages.jsx
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import Sidebar from "../../components/Sidebar";
 import { useAuthContext } from "../../context/AuthContext";

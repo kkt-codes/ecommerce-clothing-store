@@ -1,7 +1,7 @@
 // This component protects routes intended ONLY for authenticated Buyers.
 import React, { useEffect } from 'react'; // React and useEffect are needed
 import { Navigate } from 'react-router-dom';
-import { useAuthContext } from '../context/AuthContext'; // Use the global AuthContext
+import { useAuthContext } from '../context/AuthContext';
 import { useSignupSigninModal } from '../hooks/useSignupSigninModal';
 import toast from 'react-hot-toast';
 

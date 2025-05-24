@@ -1,14 +1,10 @@
-// src/components/Footer.jsx
-import React from "react";
 import { Link } from "react-router-dom";
 
 // Using react-icons (make sure it's installed: npm install react-icons)
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/fa'; 
 
 const Footer = () => {
-  // Assuming your logo is in public/assets/logo.png
-  // If it's directly in public/logo.png, change path to "/logo.png"
-  const logoUrl = "/assets/logo.png"; // This path should work if logo.png is in public/assets/
+  const logoUrl = "/assets/logo.png";
 
   const companyLinks = [
     { label: "Home", path: "/" },
@@ -36,7 +32,7 @@ const Footer = () => {
           <div className="md:col-span-12 lg:col-span-5">
             <Link to="/" className="inline-block mb-6">
               {/* Ensure logoUrl is correct and logo has transparent background if bg-gray-100 is used */}
-              <img src={logoUrl} className="h-10 sm:h-12 w-auto" alt="ClothingStore Logo" />
+              <img src={logoUrl} className="h-10 sm:h-12 w-auto" alt="Fashion Logo" />
             </Link>
             {/* Changed text color for better contrast on light background */}
             <p className="text-gray-600 text-sm leading-relaxed pr-0 lg:pr-8">
@@ -75,13 +71,13 @@ const Footer = () => {
                 </a>
               </li>
               <li className="text-gray-600">
-                <a href="mailto:support@clothingstore.com" className="hover:text-blue-600 transition-colors duration-300">
-                  support@clothingstore.com
+                <a href="mailto:support@fashion.com" className="hover:text-blue-600 transition-colors duration-300">
+                  support@fashion.com
                 </a>
               </li>
                <li className="text-gray-600">
-                <a href="mailto:partnerships@clothingstore.com" className="hover:text-blue-600 transition-colors duration-300">
-                  partnerships@clothingstore.com
+                <a href="mailto:partnerships@fashion.com" className="hover:text-blue-600 transition-colors duration-300">
+                  partnerships@fashion.com
                 </a>
               </li>
               <li className="text-gray-600 mt-2">
@@ -115,10 +111,9 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar: Copyright */}
-        {/* Adjusted border and text colors */}
         <div className="border-t border-gray-300 pt-8 mt-8 text-center">
           <p className="text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} ClothingStore. All rights reserved.
+            &copy; {new Date().getFullYear()} Fashion. All rights reserved.
           </p>
           <p className="text-xs text-gray-400 mt-1">
             Designed with passion.

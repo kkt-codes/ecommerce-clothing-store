@@ -1,4 +1,3 @@
-// src/components/AddReviewForm.jsx
 import React, { useState } from 'react';
 import { StarIcon } from '@heroicons/react/24/solid'; // For filled stars
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline'; // For empty stars in selection

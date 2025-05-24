@@ -1,4 +1,3 @@
-// src/pages/Contact.jsx
 import React, { useState } from 'react';
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 

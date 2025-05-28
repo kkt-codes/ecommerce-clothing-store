@@ -263,10 +263,6 @@ export default function SignupSigninModal() {
 }
 
 // FloatingInput and FloatingPasswordInput components remain the same as the "notched" style
-// (from signup_signin_modal_final_style artifact)
-// Ensure they are defined here or imported if they are in a separate file.
-// For brevity, I'm assuming they are defined as in the last version of signup_signin_modal_final_style.
-// If not, I can re-paste them here. Let's assume they are:
 
 function FloatingInput({ label, name, type = "text", value, onChange, onBlur, error, autoComplete }) {
   return (

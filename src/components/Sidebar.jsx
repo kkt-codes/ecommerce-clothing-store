@@ -24,55 +24,62 @@ export default function Sidebar({ links, userRole, userName }) {
   };
 
   return (
-    <aside className="w-60 md:w-64 h-screen bg-white shadow-2xl flex flex-col sticky top-0 left-0 z-40 print:hidden"> 
+    <aside className="h-screen bg-white shadow-2xl flex flex-col sticky top-0 left-0 z-40 print:hidden w-20 md:w-20 lg:w-60">
       {/* User Info Area */}
-      <div className="p-5 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-            <UserCircleIcon className="h-12 w-12 text-gray-400 flex-shrink-0"/>
-            <div className="overflow-hidden"> 
-                <p className="text-sm font-semibold text-gray-800 capitalize truncate" title={userName || "User"}>
-                  {userName || "User"}
-                </p>
-                <p className="text-xs text-gray-500 capitalize">{userRole ? `${userRole} Account` : "Account"}</p>
-            </div>
+      <div className="p-2 lg:p-5 border-b border-gray-200">
+        <div className="flex flex-col items-center lg:flex-row lg:items-center lg:gap-3">
+          <UserCircleIcon className="h-10 w-10 text-gray-400" />
+
+          <div className="mt-1 lg:mt-0 text-center lg:text-left">
+            <p
+              className="hidden lg:block text-sm font-semibold text-gray-800 capitalize truncate"
+              title={userName || "User"}
+            >
+              {userName || "User"}
+            </p>
+            <p className="hidden lg:block text-xs text-gray-500 capitalize">
+              {userRole ? `${userRole} Account` : "Account"}
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-grow p-4 space-y-1.5 overflow-y-auto"> 
+      <nav className="flex-grow p-2 lg:p-4 space-y-1.5 overflow-y-auto">
         {links && links.map((link) => (
-          <NavLink 
+          <NavLink
             key={link.path}
             to={link.path}
-            end={link.path.endsWith('dashboard') || link.path === '/seller/dashboard' || link.path === '/buyer/dashboard'} 
+            end={link.path.endsWith('dashboard')}
             className={({ isActive }) =>
-              `flex items-center gap-3.5 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ease-in-out group
-              ${isActive 
-                ? 'bg-blue-600 text-white shadow-lg transform scale-[1.02]' 
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:translate-x-1'
+              `flex flex-col lg:flex-row items-center lg:items-start gap-1 lg:gap-3.5 px-3 lg:px-4 py-2.5 rounded-lg text-xs lg:text-sm font-medium transition-all duration-200 ease-in-out group 
+              ${isActive
+                ? 'bg-blue-600 text-white shadow-lg transform scale-[1.02]'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`
             }
           >
-            {/* Ensure link.icon is a valid React component */}
-            {link.icon && React.createElement(link.icon, { 
-                className: `h-5 w-5 flex-shrink-0 transition-colors group-hover:text-blue-500 ${
-                    location.pathname === link.path ? 'text-white' : 'text-gray-400'
-                }`
+            {link.icon && React.createElement(link.icon, {
+              className: `h-5 w-5 transition-colors group-hover:text-blue-500 ${
+                location.pathname === link.path ? 'text-white' : 'text-gray-400'
+              }`
             })}
-            <span>{link.label}</span>
+            <span className="hidden lg:inline">{link.label}</span>
+            <span className="lg:hidden text-[10px] text-center block">{link.label}</span> {/* small text under icon */}
           </NavLink>
         ))}
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-4 mt-auto border-t border-gray-200">
+      {/* Sign out */}
+      <div className="p-2 lg:p-4 mt-auto border-t border-gray-200">
         <button
           onClick={handleSignOut}
-          disabled={authIsLoading} // Disable button if auth operations are in progress
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 transition-all duration-200 ease-in-out group disabled:opacity-70"
+          disabled={authIsLoading}
+          className="w-full flex flex-col lg:flex-row items-center gap-1 lg:gap-3 px-3 lg:px-4 py-2.5 rounded-lg text-xs lg:text-sm text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 transition"
         >
-          <ArrowLeftStartOnRectangleIcon className="h-5 w-5 text-red-500 group-hover:text-red-600 transition-colors" />
-          <span>Sign Out</span>
+          <ArrowLeftStartOnRectangleIcon className="h-5 w-5 text-red-500" />
+          <span className="hidden lg:inline">Sign Out</span>
+          <span className="lg:hidden text-[10px]">Sign Out</span>
         </button>
       </div>
     </aside>

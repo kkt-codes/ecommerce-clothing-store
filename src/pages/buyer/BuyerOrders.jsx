@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../components/Sidebar';
 import { useAuthContext } from '../../context/AuthContext';
-import { ListBulletIcon, ShoppingCartIcon, UserCircleIcon, ChartBarIcon, ChatBubbleLeftEllipsisIcon, HeartIcon } from '@heroicons/react/24/outline'; // Sidebar and empty state icons
+import { ListBulletIcon, ShoppingCartIcon, UserCircleIcon, ChartBarIcon, ChatBubbleLeftEllipsisIcon, ShoppingBagIcon, HeartIcon } from '@heroicons/react/24/outline'; // Sidebar and empty state icons
 import toast from 'react-hot-toast';
 
 export default function BuyerOrders() {

@@ -162,7 +162,7 @@ const ContactPage = () => {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-700">Our Address</h3>
                       <p className="text-gray-600 text-sm">
-                        123 E-commerce Avenue, Fashion City, FS 12345, YourCountry
+                        123 E-commerce Avenue, Fashion City, FS 12345, Neptune
                       </p>
                     </div>
                   </div>
@@ -170,12 +170,12 @@ const ContactPage = () => {
                     <EnvelopeIcon className="h-7 w-7 text-blue-600 mr-4 flex-shrink-0 mt-1" />
                     <div>
                       <h3 className="text-lg font-semibold text-gray-700">Email Us</h3>
-                      <a href="mailto:support@clothingstore.com" className="text-blue-600 hover:text-blue-700 text-sm transition-colors">
-                        support@clothingstore.com
+                      <a href="mailto:support@fashion.com" className="text-blue-600 hover:text-blue-700 text-sm transition-colors">
+                        support@fashion.com
                       </a>
                       <br/>
-                      <a href="mailto:partnerships@clothingstore.com" className="text-blue-600 hover:text-blue-700 text-sm transition-colors">
-                        partnerships@clothingstore.com
+                      <a href="mailto:partnerships@fashion.com" className="text-blue-600 hover:text-blue-700 text-sm transition-colors">
+                        partnerships@fashion.com
                       </a>
                     </div>
                   </div>

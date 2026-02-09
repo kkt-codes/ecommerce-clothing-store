@@ -37,8 +37,8 @@ This project is a responsive and interactive frontend for a clothing e-commerce 
 
 1.  **Clone the repository (Example):**
     ```bash
-    git clone <your-repository-url>
-    cd <your-project-directory>
+    git clone https://github.com/kkt-codes/ecommerce-clothing-store.git
+    cd ecommerce-clothing-store
     ```
 
 2.  **Install dependencies:**
